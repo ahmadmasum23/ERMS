@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
+
+class ValidateDialog extends GetView<BorrowerController> {
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      return Container(
+        margin: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          border: Border.all(color: Colors.red.shade200),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Terjadi kesalahan:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.red.shade900,
+                fontSize: 20,
+              ),
+            ),
+        
+            const SizedBox(height: 8),
+        
+            ListView.separated(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final e = controller.errorList[index];
+        
+                return Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error, size: 15, color: Colors.red.shade400),
+                  
+                      const SizedBox(width: 5),
+                  
+                      Expanded(child: Text(e)),
+                    ],
+                  ),
+                );
+              },
+              separatorBuilder: (context, index) => const SizedBox(height: 5),
+              itemCount: controller.errorList.length,
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}

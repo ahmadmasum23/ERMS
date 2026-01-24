@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+import 'package:inven/app/global/widgets/CustomAppBar.dart';
+import 'package:inven/app/global/widgets/CustomTxtForm.dart';
+import 'package:get/get.dart';
+import 'package:inven/app/global/controllers/global_inven_controller.dart';
+
+import 'package:inven/app/global/widgets/CustomFilterChips.dart';
+import 'package:inven/app/modules/admin/views/alatM/body_alatM.dart';
+
+
+class AdminAlatManagementView extends GetView<GlobalInvenController>{
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
+  const AdminAlatManagementView({Key? key, required this.scaffoldKey}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CustomAppbar(
+          title: 'Alat Management',
+          boldTitle: 'Panel',
+          showNotif: false,
+          leading: IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => scaffoldKey.currentState?.openDrawer(),
+          ),
+        ),
+                      
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: CustomTxtForm(
+            Label: 'Cari barang',
+            Controller: controller.ctrlFilter,
+            Focus: controller.fcsFilter,
+            OnSubmit: (val) {
+              controller.filterData(val!);
+            },
+            OnChange: (val) {
+              controller.filterData(val!);
+            },
+          ),
+        ),
+
+        const SizedBox(height: 15),
+
+        Obx(() {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: CustomFilterChips(
+                    opsi: controller.opsiFilter.value,
+                    select: controller.selectOpsi.value,
+                    isSelect: (val) {
+                      controller.selectOpsi.value = val;
+                      controller.combineFilter();
+                    },
+                  ),
+                ),
+
+                IconButton(
+                  onPressed: () {
+                    controller.refresh();
+                  },
+                  icon: Icon(Icons.refresh),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        const SizedBox(height: 15),
+
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.all(0),
+                shrinkWrap: true,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: controller.filterBarang.length,
+                separatorBuilder: (context, index) {
+                  return const SizedBox();
+                },
+                itemBuilder: (context, index) {
+                  final item = controller.filterBarang[index];
+
+                  return BodyAlatM(model: item);
+                },
+              );
+            }),
+          ),
+        ),
+      
+      ],
+    );
+  }
+}
