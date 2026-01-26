@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/modules/admin/controllers/operator_edit_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_edit_controller.dart';
 
 class EditDeskBarang extends GetView<AdminEditController> {
   @override

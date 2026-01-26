@@ -1,4 +1,3 @@
-import 'AppLokasi.dart';
 import 'AppPengajuan.dart';
 import 'AppStatusPengajuan.dart';
 import 'AppUnitBarang.dart';
@@ -17,7 +16,6 @@ class AppRiwayat {
   final AppUnitBarang? unitBarang;
   final AppStatusPengajuan? statusAwal;
   final AppStatusPengajuan? statusBaru;
-  final AppLokasi? lokasi;
   final AppPengajuan? pengajuan;
 
   AppRiwayat({
@@ -32,7 +30,6 @@ class AppRiwayat {
     this.unitBarang,
     this.statusAwal,
     this.statusBaru,
-    this.lokasi,
     this.pengajuan,
   });
 

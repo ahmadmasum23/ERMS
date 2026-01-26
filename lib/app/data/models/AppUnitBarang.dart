@@ -2,9 +2,7 @@ import 'AppStatusUnit.dart';
 import 'AppPengajuan.dart';
 import 'AppRiwayat.dart';
 import 'AppBarang.dart';
-import 'AppKepemilikan.dart';
 import 'AppKondisi.dart';
-import 'AppLokasi.dart';
 
 class AppUnitBarang {
   final int id;
@@ -14,9 +12,9 @@ class AppUnitBarang {
 
   //relasi
   final AppBarang? barang;
-  final AppKepemilikan? kepemilikan;
+
   final AppStatusUnit? status;
-  final AppLokasi? lokasi;
+
   final AppKondisi? kondisi;
   final List<AppPengajuan>? pengajuan;
   final List<AppRiwayat>? riwayat;
@@ -27,9 +25,8 @@ class AppUnitBarang {
     required this.noSeri,
     this.foto,
     this.barang,
-    this.kepemilikan,
     this.status,
-    this.lokasi,
+
     this.kondisi,
     this.pengajuan,
     this.riwayat,
@@ -42,9 +39,7 @@ class AppUnitBarang {
       'no_seri': noSeri,
       'foto': foto,
       'barang': barang?.toJson(),
-      'kepemilikan': kepemilikan?.toJson(),
       'status': status?.toJson(),
-      'lokasi': lokasi?.toJson(),
       'kondisi': kondisi?.toJson(),
       'pengajuan': pengajuan?.map((p) => p.toJson()).toList(),
       'riwayat': riwayat?.map((r) => r.toJson()).toList(),
@@ -60,14 +55,8 @@ class AppUnitBarang {
       barang: json['barang'] != null
           ? AppBarang.fromJson(json['barang'])
           : null,
-      kepemilikan: json['kepemilikan'] != null
-          ? AppKepemilikan.fromJson(json['kepemilikan'])
-          : null,
       status: json['status'] != null
           ? AppStatusUnit.fromJson(json['status'])
-          : null,
-      lokasi: json['lokasi'] != null
-          ? AppLokasi.fromJson(json['lokasi'])
           : null,
       kondisi: json['kondisi'] != null
           ? AppKondisi.fromJson(json['kondisi'])

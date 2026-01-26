@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:inven/app/data/models/AppBarang.dart';
 import 'package:inven/app/global/widgets/CustomBtnForm.dart';
-import 'package:inven/app/modules/admin/controllers/operator_edit_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_edit_controller.dart';
 
 class EditPanelFooter extends GetView<AdminEditController> {
   final AppBarang model;
@@ -46,7 +46,7 @@ class EditPanelFooter extends GetView<AdminEditController> {
                           ),
                           onPressed: () {
                             Navigator.of(ctx).pop();
-                            controller.updateBarang(model.id);
+                            controller.updateBarang();
                           },
                           child: const Text(
                             'Simpan',

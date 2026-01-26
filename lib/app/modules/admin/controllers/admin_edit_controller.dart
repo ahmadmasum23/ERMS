@@ -27,6 +27,9 @@ class AdminEditController extends GetxController {
   var ctrlKategori = 0.obs;
   var ctrlJenis = 0.obs;
 
+  // Store the current model being edited
+  AppBarang? _currentModel;
+
   final fcsDesk = FocusNode();
   final fcsSpek = FocusNode();
   final fcsNote = FocusNode();
@@ -42,7 +45,8 @@ class AdminEditController extends GetxController {
     fetchOpsi();
   }
 
-  void initData(AppBarang model) {
+  void setModel(AppBarang model) {
+    _currentModel = model;
     ctrlMerk.text = model.merk;
     ctrlJenis.value = model.jenisId;
     ctrlDesk.text = model.deskripsi!;
@@ -52,6 +56,8 @@ class AdminEditController extends GetxController {
     ctrlNote.text = model.note!;
     ctrlKategori.value = model.kategoriId;
   }
+
+  AppBarang? get currentModel => _currentModel;
 
   Future<void> fetchOpsi() async {
     try {
@@ -65,12 +71,13 @@ class AdminEditController extends GetxController {
     }
   }
 
-  Future<void> updateBarang(int id) async {
+  Future<void> updateBarang() async {
+    if (_currentModel == null) return;
     try {
       isLoading.value = true;
 
       final data = AppBarang(
-        id: id,
+        id: _currentModel!.id,
         nmBarang: ctrlBarang.text,
         kdBarang: "",
         kategoriId: ctrlKategori.value,
@@ -85,7 +92,7 @@ class AdminEditController extends GetxController {
         note: ctrlNote.text,
       );
 
-      final success = await servUpdt.updtItem(id, data);
+      final success = await servUpdt.updtItem(_currentModel!.id, data);
 
       controller.refresh();
 

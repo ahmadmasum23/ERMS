@@ -204,7 +204,7 @@ class AdminActivityLogView extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: Colors.purple,
+                color: Colors.black,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Center(
@@ -279,7 +279,7 @@ class AdminActivityLogView extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.purple,
+            color: Colors.black,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Center(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/models/AppBarang.dart';
-import 'package:inven/app/modules/admin/controllers/operator_edit_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_edit_controller.dart';
 
 class EditPanelHeader extends GetView<AdminEditController> {
   final AppBarang model;

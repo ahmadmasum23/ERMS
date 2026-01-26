@@ -2,7 +2,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/models/AppKategori.dart';
-import 'package:inven/app/modules/admin/controllers/operator_edit_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_edit_controller.dart';
 
 class EditKategoriBarang extends GetView<AdminEditController> {
   @override

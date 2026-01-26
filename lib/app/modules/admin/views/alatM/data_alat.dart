@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/models/AppBarang.dart';
+import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/global/utils/Formatter.dart';
 import 'package:inven/app/global/widgets/CustomShowDialog.dart';
-import 'package:inven/app/modules/admin/views/editdata/operator_edit_view.dart';
+import 'package:inven/app/modules/admin/controllers/admin_edit_controller.dart';
+import 'package:inven/app/modules/admin/views/editdata/admin_edit_view.dart';
 
 class DataAlat extends StatelessWidget {
   final AppBarang model;
@@ -37,19 +39,37 @@ class DataAlat extends StatelessWidget {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
-            // tombol untuk memunculkan edit data barang
-            IconButton(
-              visualDensity: VisualDensity.comfortable,
-              onPressed: () {
-                Get.dialog(
-                  CustomShowDialog(
-                    heightFactor: 0.70,
-                    child: OperatorEditView(model: model),
-                  ),
+            // tombol untuk memunculkan edit data barang - hanya ditampilkan jika role adalah admin (peranId = 1)
+            Obx(() {
+              final userController = Get.find<GlobalUserController>();
+              final currentUser = userController.user.value;
+              
+              // Tampilkan tombol edit hanya jika user saat ini adalah admin (role ID 1)
+              if (currentUser != null && currentUser.peranId == 1) {
+                return IconButton(
+                  visualDensity: VisualDensity.comfortable,
+                  onPressed: () {
+                    // Put the controller before opening the dialog
+                    Get.put(AdminEditController());
+                    Get.dialog(
+                      CustomShowDialog(
+                        heightFactor: 0.70,
+                        child: AdminEditView(model: model),
+                      ),
+                    ).then((_) {
+                      // Clean up the controller when dialog is closed
+                      if (Get.isRegistered<AdminEditController>()) {
+                        Get.delete<AdminEditController>();
+                      }
+                    });
+                  },
+                  icon: Icon(Icons.edit, size: 20),
                 );
-              },
-              icon: Icon(Icons.edit, size: 20),
-            ),
+              } else {
+                // Jika bukan admin, tidak menampilkan tombol edit
+                return Container(); // atau bisa juga menggunakan SizedBox.shrink()
+              }
+            }),
           ],
         ),
 
