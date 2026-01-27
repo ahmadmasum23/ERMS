@@ -1,15 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/static_data/static_services_get.dart';
-import 'package:inven/app/data/static_data/static_services_post.dart';
+import 'package:inven/app/data/services/database_service_provider.dart';
 import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/routes/app_pages.dart';
 
 class LoginController extends GetxController {
-  final services = StaticServicesPost();
-  final servsget = StaticServicesGet();
-  // final loginKey = GlobalKey<FormState>();
-
   final ctrlEmail = TextEditingController();
   final ctrlPass = TextEditingController();
 
@@ -17,52 +12,44 @@ class LoginController extends GetxController {
   final fcsPass = FocusNode();
 
   final isPassHide = true.obs;
-
   var isLoading = false.obs;
-  var isLogin = false.obs;
 
-  void toglePass() {
-    isPassHide.value = !isPassHide.value;
-  }
+  void toglePass() => isPassHide.value = !isPassHide.value;
 
   void clearForm() {
     ctrlEmail.clear();
     ctrlPass.clear();
   }
 
-  // @override
-  // onClose() {
-  //   ctrlEmail.dispose();
-  //   ctrlPass.dispose();
-  //   fcsEmail.dispose();
-  //   fcsPass.dispose();
-  //   super.onClose();
-  // }
+  @override
+  void onClose() {
+    ctrlEmail.dispose();
+    ctrlPass.dispose();
+    fcsEmail.dispose();
+    fcsPass.dispose();
+    super.onClose();
+  }
 
   Future<void> login(GlobalKey<FormState> loginKey) async {
-    final user = Get.find<GlobalUserController>();
+    final userGlobal = Get.find<GlobalUserController>();
 
     if (isLoading.value) return;
-
-    if (!(loginKey.currentState?.validate() ?? false)) {
-      return;
-    }
+    if (!(loginKey.currentState?.validate() ?? false)) return;
 
     try {
       isLoading.value = true;
 
-      final data = await services.postUser(ctrlEmail.text, ctrlPass.text);
+      final data = await DatabaseServiceProvider.login(
+        ctrlEmail.text.trim(),
+        ctrlPass.text.trim(),
+      );
 
       if (data != null) {
-        user.setUser(data);
+        userGlobal.setUser(data);
 
-        Get.snackbar(
-          'Sukses',
-          'Berhasil melakukan login',
-          duration: Duration(seconds: 2),
-        );
+        Get.snackbar('Sukses', 'Berhasil login');
 
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(milliseconds: 800));
 
         switch (data.peranId) {
           case 1:
@@ -75,20 +62,13 @@ class LoginController extends GetxController {
             Get.offAllNamed(Routes.BORROWER);
             break;
           default:
+            Get.snackbar('Error', 'Role tidak dikenali');
         }
       } else {
-        Get.snackbar(
-          'Error',
-          'Email atau Password salah',
-          duration: Duration(seconds: 2),
-        );
+        Get.snackbar('Error', 'Email atau password salah');
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan',
-        duration: Duration(seconds: 2),
-      );
+      Get.snackbar('Error', 'Login gagal: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }

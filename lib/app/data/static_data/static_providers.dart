@@ -3,39 +3,9 @@ import '../models/AppJenis.dart';
 import '../models/AppKategori.dart';
 import '../models/AppPengajuan.dart';
 import '../models/AppUnitBarang.dart';
-import '../models/AppUser.dart';
 import '../models/AppStatusPengajuan.dart';
 
 class StaticProviders {
-  // Static user data
-  static List<AppUser> getUsers() {
-    return [
-      AppUser(
-        id: 1,
-        peranId: 1,
-        inst: 'IT Department',
-        nama: 'John Doe',
-        email: 'admin@gmail.com',
-        pass: '1234567890',
-      ),
-      AppUser(
-        id: 2,
-        peranId: 2,
-        inst: 'Marketing Department',
-        nama: 'Jane Smith',
-        email: 'petugas@gmail.com',
-        pass: '1234567890',
-      ),
-      AppUser(
-        id: 3,
-        peranId: 3,
-        inst: 'Finance Department',
-        nama: 'Bob Wilson',
-        email: 'peminjam@gmail.com',
-        pass: '1234567890',
-      ),
-    ];
-  }
 
   // Static barang data
   static List<AppBarang> getBarang() {
@@ -163,7 +133,6 @@ class StaticProviders {
         pinjamTgl: DateTime.now().add(Duration(days: 1)).toString(),
         kembaliTgl: DateTime.now().add(Duration(days: 3)).toString(),
         jumlah: 2,
-        pengguna: getUsers()[1],
         unit: [getUnitBarang()[0]],
         status: statusList.firstWhere((s) => s.id == 1),
         riwayat: [],
@@ -177,24 +146,11 @@ class StaticProviders {
         pinjamTgl: DateTime.now().add(Duration(days: 2)).toString(),
         kembaliTgl: DateTime.now().add(Duration(days: 5)).toString(),
         jumlah: 1,
-        pengguna: getUsers()[2],
         unit: [getUnitBarang()[1]],
         status: statusList.firstWhere((s) => s.id == 2),
         riwayat: [],
       ),
     ];
-  }
-
-  // Helper method to find user by email and password
-  static AppUser? authenticateUser(String email, String password) {
-    final users = getUsers();
-    try {
-      return users.firstWhere(
-        (user) => user.email == email && user.pass == password,
-      );
-    } catch (e) {
-      return null;
-    }
   }
 
   // Helper method to get pengajuan by user ID

@@ -3,18 +3,6 @@ import '../models/AppUser.dart';
 import '../static_data/static_providers.dart';
 
 class StaticServicesPost {
-  // Post user login
-  Future<AppUser?> postUser(String email, String pass) async {
-    await Future.delayed(Duration(milliseconds: 800)); // Simulate network delay
-    
-    final user = StaticProviders.authenticateUser(email, pass);
-    
-    if (user != null) {
-      return user;
-    } else {
-      return null;
-    }
-  }
 
   // Post pengajuan peminjaman barang
   Future<AppPengajuan?> postPengajuan(
@@ -39,7 +27,6 @@ class StaticServicesPost {
         pinjamTgl: tglPinjam,
         kembaliTgl: tglKembali,
         jumlah: unit.length,
-        pengguna: StaticProviders.getUsers().firstWhere((u) => u.id == id),
         unit: [], // Would populate with actual units in real implementation
         status: null,
         riwayat: [],

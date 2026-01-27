@@ -206,10 +206,11 @@ class BorrowerController extends GetxController {
       isLoading.value = true;
 
       //get hanya riwayat peminjaman
-      final pinjam = await StaticServicesGet().dataPinjam(userData!.id);
+      final pinjam = await StaticServicesGet().dataPinjam(userData!.id as int);
+
 
       //get semua riwayat
-      final riwayat = await StaticServicesGet().dataRiwayat(userData!.id);
+      final riwayat = await StaticServicesGet().dataRiwayat(userData!.id as int);
 
       //get data barang
       final barang = await StaticServicesGet().dataBarang();
@@ -246,7 +247,7 @@ class BorrowerController extends GetxController {
       isLoading.value = true;
 
       final response = await servPst.postPengajuan(
-        user!.id,
+        user!.id as int,
         ctrlInstansi.text,
         ctrlKeperluan.text,
         tglPinjam.toString(),

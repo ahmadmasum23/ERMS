@@ -11,9 +11,9 @@ class GlobalUserController extends GetxController {
     user.value = model;
   }
 
-  void logout() {
+  void logout() async {
     user.value = null;
-
+    
     final login = Get.find<LoginController>();
     login.clearForm();
 
