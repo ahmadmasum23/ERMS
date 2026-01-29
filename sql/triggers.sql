@@ -1,87 +1,7 @@
--- =====================================================
--- TRIGGERS
--- =====================================================
-
--- =========================
--- TRIGGER SIGNUP USER
--- =========================
-create or replace function handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public, auth
-as $$
-declare
-  v_peran text;
-begin
-  v_peran := new.raw_user_meta_data->>'peran';
-
-  if v_peran not in ('admin', 'petugas', 'peminjam') then
-    v_peran := 'peminjam';
-  end if;
-
-  insert into profil_pengguna (id, nama_lengkap, peran)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data->>'nama_lengkap', 'Pengguna'),
-    v_peran
-  );
-
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-
-create trigger on_auth_user_created
-after insert on auth.users
-for each row
-execute function handle_new_user();
-
--- =========================
--- TRIGGER HITUNG KETERLAMBATAN
--- =========================
-create or replace function trg_hitung_keterlambatan()
-returns trigger
-language plpgsql
-as $$
-begin
-  if new.tanggal_kembali is not null then
-    new.hari_terlambat :=
-      hitung_hari_terlambat(
-        new.tanggal_jatuh_tempo,
-        new.tanggal_kembali
-      );
-  end if;
-
-  return new;
-end;
-$$;
-
-drop trigger if exists hitung_keterlambatan on peminjaman;
-
-create trigger hitung_keterlambatan
-before update on peminjaman
-for each row
-execute function trg_hitung_keterlambatan();
-
--- =========================
--- TRIGGER LOG AKTIVITAS
--- =========================
-alter table log_aktivitas
-alter column pengguna_id drop not null;
-
-create or replace function trg_log_aktivitas()
-returns trigger
-language plpgsql
-security definer
-as $$
-declare
-  v_user_id uuid;
-begin
-  v_user_id := auth.uid();
-
-  insert into log_aktivitas (
+CREATE OR REPLACE FUNCTION public.log_activity_fn()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.log_aktivitas (
     pengguna_id,
     aksi,
     entitas,
@@ -89,41 +9,80 @@ begin
     nilai_lama,
     nilai_baru
   )
-  values (
-    v_user_id,
-    TG_OP,
-    TG_TABLE_NAME,
-    coalesce(new.id, old.id),
-    to_jsonb(old),
-    to_jsonb(new)
+  VALUES (
+    auth.uid(),              -- user yang login
+    TG_OP,                   -- INSERT / UPDATE / DELETE
+    TG_TABLE_NAME,           -- nama tabel
+    COALESCE(NEW.id, OLD.id),
+    to_jsonb(OLD),
+    to_jsonb(NEW)
   );
 
-  return coalesce(new, old);
-end;
-$$;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-drop trigger if exists log_peminjaman on peminjaman;
+CREATE TRIGGER log_peminjaman
+AFTER INSERT OR UPDATE OR DELETE ON public.peminjaman
+FOR EACH ROW EXECUTE FUNCTION public.log_activity_fn();
 
-create trigger log_peminjaman
-after insert or update or delete
-on peminjaman
-for each row
-execute function trg_log_aktivitas();
+CREATE TRIGGER log_detail_peminjaman
+AFTER INSERT OR UPDATE OR DELETE ON public.detail_peminjaman
+FOR EACH ROW EXECUTE FUNCTION public.log_activity_fn();
 
--- =========================
--- TRIGGER PENGAMAN (ANTI SPOOFING)
--- =========================
-create or replace function trg_force_peminjam_login()
-returns trigger
-language plpgsql
-as $$
-begin
-  new.peminjam_id := auth.uid();
-  return new;
-end;
-$$;
+CREATE TRIGGER log_alat
+AFTER INSERT OR UPDATE OR DELETE ON public.alat
+FOR EACH ROW EXECUTE FUNCTION public.log_activity_fn();
 
-create trigger force_peminjam_login
-before insert on peminjaman
-for each row
-execute function trg_force_peminjam_login();
+CREATE OR REPLACE FUNCTION public.kurangi_stok_alat()
+RETURNS trigger AS $$
+BEGIN
+  UPDATE public.alat
+  SET stok = stok - 1,
+      status = CASE WHEN stok - 1 = 0 THEN 'dipinjam' ELSE status END
+  WHERE id = NEW.alat_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_kurangi_stok
+AFTER INSERT ON public.detail_peminjaman
+FOR EACH ROW EXECUTE FUNCTION public.kurangi_stok_alat();
+
+CREATE OR REPLACE FUNCTION public.tambah_stok_alat()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.kondisi_saat_kembali IS NOT NULL THEN
+    UPDATE public.alat
+    SET stok = stok + 1,
+        status = 'tersedia'
+    WHERE id = NEW.alat_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_tambah_stok
+AFTER UPDATE ON public.detail_peminjaman
+FOR EACH ROW
+WHEN (OLD.kondisi_saat_kembali IS NULL AND NEW.kondisi_saat_kembali IS NOT NULL)
+EXECUTE FUNCTION public.tambah_stok_alat();
+
+CREATE OR REPLACE FUNCTION public.hitung_keterlambatan()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.tanggal_kembali IS NOT NULL THEN
+    NEW.hari_terlambat :=
+      GREATEST(0, DATE_PART('day', NEW.tanggal_kembali - NEW.tanggal_jatuh_tempo));
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_hitung_telat
+BEFORE UPDATE ON public.peminjaman
+FOR EACH ROW EXECUTE FUNCTION public.hitung_keterlambatan();
+

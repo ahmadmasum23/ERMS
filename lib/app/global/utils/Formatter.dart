@@ -27,17 +27,6 @@ class Formatter {
         .join(' ');
   }
 
-  static String getRole(int id) {
-    switch (id) {
-      case 4:
-        return 'Operator';
-      case 5:
-        return 'Borrower';
-      default:
-        return 'Halo';
-    }
-  }
-
   static String GetStatus(int id) {
     switch (id) {
       case 1:
@@ -48,17 +37,6 @@ class Formatter {
         return 'Rusak';
       default:
         return 'Tidak Diketahui';
-    }
-  }
-
-  static String GetLokasi(int id) {
-    switch (id) {
-      case 1:
-        return 'Gudang A';
-      case 2:
-        return 'Gudang B';
-      default:
-        return 'Lokasi Tidak Dikenal';
     }
   }
 

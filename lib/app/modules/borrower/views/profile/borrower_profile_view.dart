@@ -56,7 +56,7 @@ class BorrowerProfileView extends GetView<BorrowerController> {
                 );
               }
             },
-            title: Formatter.getRole(controller.userData?.peranId ?? 0),
+            title: 'Hallo',
             boldTitle: controller.userData?.nama ?? '',
           ),
           Expanded(
@@ -134,7 +134,6 @@ class BorrowerProfileView extends GetView<BorrowerController> {
         const Divider(height: 24),
         _buildInfoRow('Email', controller.userData?.email ?? '-'),
         const Divider(height: 24),
-        _buildInfoRow('Institution', controller.userData?.inst ?? '-'),
         const Divider(height: 24),
         _buildInfoRow('Member Since', 'February 2024'), // Static for demo
       ],

@@ -27,7 +27,6 @@ class PengembalianData extends GetView<BorrowerController> {
     final nama_barang = model.unit?.first.barang?.nmBarang ?? 'Barang tidak tersedia';
     final merk_barang = model.unit?.first.barang?.merk ?? 'Merk tidak tersedia';
     final kode_barang = model.unit?.first.barang?.kdBarang ?? 'Kode tidak tersedia';
-    final instansi = model.pengguna?.inst ?? 'Instansi tidak tersedia';
     final peminjam = model.pengguna?.nama ?? 'Peminjam tidak tersedia';
     final status = model.status?.pStatus ?? 'Status tidak tersedia';
     final jumlah = model.jumlah.toString();
@@ -80,7 +79,7 @@ class PengembalianData extends GetView<BorrowerController> {
           children: [
             const SizedBox(width: 5),
             Icon(Icons.person, size: 15),
-            Text(' $peminjam • $instansi', style: title),
+            Text(' $peminjam •', style: title),
           ],
         ),
 

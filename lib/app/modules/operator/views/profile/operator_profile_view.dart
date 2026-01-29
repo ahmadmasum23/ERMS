@@ -66,11 +66,6 @@ class OperatorProfileView extends GetView<OperatorController> {
                           ),
                           const Divider(height: 24),
                           _infoRow(
-                            'Institution',
-                            controller.userData?.inst ?? '-',
-                          ),
-                          const Divider(height: 24),
-                          _infoRow(
                             'Member Since',
                             'January 2024',
                           ),

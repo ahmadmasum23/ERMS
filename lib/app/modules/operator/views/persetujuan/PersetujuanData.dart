@@ -25,7 +25,6 @@ class PersetujuanData extends GetView<OperatorController> {
   Widget build(BuildContext context) {
     //informasi pemohon
     final peminjam = model.pengguna?.nama ?? '-';
-    final instansi = model.pengguna?.inst ?? '-';
     final keperluan = model.hal ?? '-';
 
     //detail barang
@@ -87,7 +86,7 @@ class PersetujuanData extends GetView<OperatorController> {
           children: [
             const SizedBox(width: 10),
             Icon(Icons.person, size: 15),
-            Text(' $peminjam • $instansi', style: txtIcon),
+            Text(' $peminjam •', style: txtIcon),
           ],
         ),
 

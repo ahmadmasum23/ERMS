@@ -77,7 +77,6 @@ class BorrowerController extends GetxController {
 
     if (userData != null) {
       ctrlPemohon.text = userData!.nama;
-      ctrlInstansi.text = userData!.inst;
     }
   }
 
@@ -153,7 +152,6 @@ class BorrowerController extends GetxController {
   //membersihkan form (reset)
   void resetForm() {
     ctrlPemohon.text = userData?.nama ?? '';
-    ctrlInstansi.text = userData?.inst ?? '';
     ctrlKeperluan.clear();
 
     tglPinjam.value = null;

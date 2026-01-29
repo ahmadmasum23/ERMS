@@ -118,7 +118,7 @@ using (auth.uid() = peminjam_id);
 create policy "petugas bisa lihat semua pengajuan"
 on peminjaman
 for select
-using (
+using ( 
   exists (
     select 1
     from profil_pengguna
@@ -126,3 +126,48 @@ using (
     and peran = 'petugas'
   )
 );
+
+grant usage on schema public to anon, authenticated;
+
+grant select, insert, update, delete
+on table public.profil_pengguna
+to authenticated;
+
+grant usage, select on all sequences in schema public
+to authenticated;
+
+alter default privileges in schema public
+grant select, insert, update, delete on tables to authenticated;
+
+alter table profil_pengguna
+add column email text,
+add column alamat text;
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  insert into profil_pengguna (
+    id,
+    nama_lengkap,
+    peran,
+    email,
+    alamat
+  )
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'nama_lengkap', 'Pengguna'),
+    'peminjam',
+    new.email,
+    new.raw_user_meta_data->>'alamat'
+  );
+
+  return new;
+end;
+$$;
+
+
+
+

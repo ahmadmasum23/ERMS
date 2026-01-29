@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_service.dart';
 import '../models/AppUser.dart';
-import '../models/AppRole.dart';
 
 class UserService {
   final SupabaseClient _supabase = AuthService().client;
@@ -21,13 +20,11 @@ class UserService {
     if (data['peran'] == 'petugas') roleId = 2;
 
     return AppUser(
-      id: data['id'], // UUID STRING
+      id: data['id'], 
       peranId: roleId,
-      inst: 'Unknown',
       nama: data['nama_lengkap'],
       email: '',
       pass: '',
-      role: AppRole(id: roleId, peran: data['peran']),
     );
   }
 

@@ -1,3 +1,5 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/AppUser.dart';
 import 'auth_service.dart';
 import 'user_service.dart';
@@ -14,22 +16,33 @@ class DatabaseServiceProvider {
     return await _user.getProfile();
   }
 
-  static Future<bool> register({
-    required String email,
-    required String password,
-    required String nama,
-    required String peran,
-  }) async {
-    final user = await _auth.register(email, password);
-    if (user == null) return false;
+  static Future<void> register({
+  required String email,
+  required String password,
+  required String nama,
+  required String peran,
+  required String alamat,
+  required String nomorHp,
+}) async {
+  final supabase = Supabase.instance.client;
 
-    await _user.insertProfile(
-      userId: user.id,
-      nama: nama,
-      peran: peran,
-    );
-    return true;
-  }
+  final auth = await supabase.auth.signUp(
+    email: email,
+    password: password,
+  );
+
+  final user = auth.user;
+  if (user == null) throw Exception("User gagal dibuat");
+
+  await supabase.from('profil_pengguna').insert({
+    'id': user.id,
+    'nama_lengkap': nama,
+    'peran': peran,
+    'alamat': alamat,
+    'nomor_hp': nomorHp,
+  });
+}
+
 
   static Future<void> logout() => _auth.logout();
 

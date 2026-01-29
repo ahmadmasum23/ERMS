@@ -43,7 +43,7 @@ class AppPengajuan {
       'tgl_pinjam': pinjamTgl,
       'tgl_kembali': kembaliTgl,
       'jumlah': jumlah,
-      'user': pengguna?.toJson(),
+      // 'user': pengguna?.toJson(),
       'unit': unit?.map((u)=>u.toJson()).toList(),
       'status':status?.toJson(),
       'riwayat':riwayat?.map((r)=>toJson()).toList(),
