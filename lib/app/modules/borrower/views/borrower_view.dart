@@ -5,7 +5,7 @@ import 'package:inven/app/modules/borrower/views/pengajuan/borrower_ajukan_view.
 import 'package:inven/app/modules/borrower/views/pengembalian/borrower_pengembalian_view.dart';
 import 'package:inven/app/modules/borrower/views/profile/borrower_profile_view.dart';
 import 'package:inven/app/modules/borrower/views/riwayat/borrower_riwayat_view.dart';
-import 'package:inven/app/modules/borrower/views/inventaris/operator_inven_view.dart';
+import 'package:inven/app/modules/borrower/views/inventaris/borrower_equipment_view.dart';
 
 import '../controllers/borrower_controller.dart';
 
@@ -19,7 +19,7 @@ class BorrowerView extends GetView<BorrowerController> {
           index: controller.isIndex.value,
           children: [
 
-            OperatorInvenView(),
+            BorrowerEquipmentView(),
              
             BorrowerAjukanView(),
 
@@ -44,7 +44,7 @@ class BorrowerView extends GetView<BorrowerController> {
             currentIndex: controller.isIndex.value,
             onTap: controller.onChangePage,
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.all_inbox), label: 'Iven Brang'),
+              BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Inventaris'),
 
               BottomNavigationBarItem(
                 icon: Icon(Icons.add_box),

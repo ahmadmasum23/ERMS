@@ -64,9 +64,9 @@ class StaticProviders {
   // Static kategori data
   static List<AppKategori> getKategori() {
     return [
-      AppKategori(id: 1, kategori: 'Komputer'),
-      AppKategori(id: 2, kategori: 'Display'),
-      AppKategori(id: 3, kategori: 'Alat Tulis'),
+      // AppKategori(id: 1, kategori: 'Komputer'),
+      // AppKategori(id: 2, kategori: 'Display'),
+      // AppKategori(id: 3, kategori: 'Alat Tulis'),
     ];
   }
 

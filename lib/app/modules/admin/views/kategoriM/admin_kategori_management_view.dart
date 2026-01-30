@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
+import 'package:inven/app/data/models/AppKategori.dart';
+import '../../controllers/admin_kategori_controller.dart';
 
 class AdminKategoriManagementView extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final AdminKategoriController controller = Get.put(AdminKategoriController());
 
-  const AdminKategoriManagementView({Key? key, required this.scaffoldKey}) : super(key: key);
+  AdminKategoriManagementView({Key? key, required this.scaffoldKey}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +42,7 @@ class AdminKategoriManagementView extends StatelessWidget {
                 Align(
                   alignment: Alignment.topRight,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Fitur Tambah Kategori belum diimplementasi')),
-                      );
-                    },
+                    onPressed: () => _showAddKategoriDialog(context),
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('Tambah Kategori'),
                     style: ElevatedButton.styleFrom(
@@ -76,67 +76,63 @@ class AdminKategoriManagementView extends StatelessWidget {
   }
 
   Widget _buildCategoryList(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    int columns = screenWidth > 600 ? 3 : 2;
-    double itemWidth = (screenWidth - 48 - (columns - 1) * 16) / columns;
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-    List<Widget> cards = [
-      _buildCategoryCard(
-        context: context,
-        title: 'Elektronik',
-        description: 'Peralatan elektronik seperti laptop, proyektor, dll',
-        itemCount: 15,
-      ),
-      _buildCategoryCard(
-        context: context,
-        title: 'Olahraga',
-        description: 'Peralatan olahraga seperti bola, net, dll',
-        itemCount: 20,
-      ),
-      _buildCategoryCard(
-        context: context,
-        title: 'Multimedia',
-        description: 'Peralatan multimedia seperti kamera, mic, dll',
-        itemCount: 10,
-      ),
-      _buildCategoryCard(
-        context: context,
-        title: 'Kelistrikan',
-        description: 'Alat-alat kelistrikan dan perbaikan',
-        itemCount: 12,
-      ),
-    ];
-
-    List<Widget> rows = [];
-    for (int i = 0; i < cards.length; i += columns) {
-      List<Widget> rowItems = [];
-      for (int j = 0; j < columns && (i + j) < cards.length; j++) {
-        rowItems.add(
-          SizedBox(
-            width: itemWidth,
-            child: cards[i + j],
+      if (controller.kategoriList.isEmpty) {
+        return const Center(
+          child: Text(
+            'Belum ada kategori',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
         );
-        if (j < columns - 1 && (i + j + 1) < cards.length) {
-          rowItems.add(const SizedBox(width: 16));
+      }
+
+      double screenWidth = MediaQuery.of(context).size.width;
+      int columns = screenWidth > 600 ? 3 : 2;
+      double itemWidth = (screenWidth - 48 - (columns - 1) * 16) / columns;
+
+      List<Widget> cards = controller.kategoriList.map((kategori) {
+        int itemCount = controller.getAlatCount(kategori.id);
+        return _buildCategoryCard(
+          context: context,
+          kategori: kategori,
+          itemCount: itemCount,
+        );
+      }).toList();
+
+      List<Widget> rows = [];
+      for (int i = 0; i < cards.length; i += columns) {
+        List<Widget> rowItems = [];
+        for (int j = 0; j < columns && (i + j) < cards.length; j++) {
+          rowItems.add(
+            SizedBox(
+              width: itemWidth,
+              child: cards[i + j],
+            ),
+          );
+          if (j < columns - 1 && (i + j + 1) < cards.length) {
+            rowItems.add(const SizedBox(width: 16));
+          }
+        }
+        rows.add(Row(children: rowItems));
+        if (i + columns < cards.length) {
+          rows.add(const SizedBox(height: 16));
         }
       }
-      rows.add(Row(children: rowItems));
-      if (i + columns < cards.length) {
-        rows.add(const SizedBox(height: 16));
-      }
-    }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: rows,
-    );
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: rows,
+      );
+    });
   }
 
   Widget _buildCategoryCard({
   required BuildContext context,
-  required String title,
-  required String description,
+  required AppKategori kategori,
   required int itemCount,
 }) {
   return Container(
@@ -161,7 +157,7 @@ class AdminKategoriManagementView extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  title,
+                  kategori.nama,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -174,11 +170,7 @@ class AdminKategoriManagementView extends StatelessWidget {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Edit $title')),
-                  );
-                },
+                onPressed: () => _showEditKategoriDialog(context, kategori),
                 icon: const Icon(
                   Icons.edit,
                   size: 18,
@@ -189,9 +181,9 @@ class AdminKategoriManagementView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            description,
+            'Kode: ${kategori.kode}',
             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
@@ -235,17 +227,12 @@ class AdminKategoriManagementView extends StatelessWidget {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Hapus $title')),
-                  );
-                },
+                onPressed: () => _confirmDeleteKategori(context, kategori),
                 icon: const Icon(
                   Icons.delete,
                   size: 18,
                   color: Colors.redAccent,
                 ),
-                // Tambahkan tooltip untuk aksesibilitas
                 tooltip: 'Hapus kategori',
               ),
             ],
@@ -255,4 +242,127 @@ class AdminKategoriManagementView extends StatelessWidget {
     ),
   );
 }
+
+  void _showAddKategoriDialog(BuildContext context) {
+    final kodeController = TextEditingController();
+    final namaController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tambah Kategori Baru'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: kodeController,
+              decoration: const InputDecoration(
+                labelText: 'Kode Kategori',
+                hintText: 'Contoh: MESIN',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: namaController,
+              decoration: const InputDecoration(
+                labelText: 'Nama Kategori',
+                hintText: 'Contoh: Mesin Jahit',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (kodeController.text.isNotEmpty && namaController.text.isNotEmpty) {
+                Navigator.pop(context);
+                await controller.addKategori(
+                  kode: kodeController.text.trim(),
+                  nama: namaController.text.trim(),
+                );
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditKategoriDialog(BuildContext context, AppKategori kategori) {
+    final kodeController = TextEditingController(text: kategori.kode);
+    final namaController = TextEditingController(text: kategori.nama);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Kategori'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: kodeController,
+              decoration: const InputDecoration(
+                labelText: 'Kode Kategori',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: namaController,
+              decoration: const InputDecoration(
+                labelText: 'Nama Kategori',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (kodeController.text.isNotEmpty && namaController.text.isNotEmpty) {
+                Navigator.pop(context);
+                await controller.updateKategori(
+                  id: kategori.id,
+                  kode: kodeController.text.trim(),
+                  nama: namaController.text.trim(),
+                );
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteKategori(BuildContext context, AppKategori kategori) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: Text('Apakah Anda yakin ingin menghapus kategori "${kategori.nama}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              await controller.deleteKategori(kategori.id);
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 }

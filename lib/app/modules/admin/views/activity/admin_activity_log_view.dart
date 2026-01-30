@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:inven/app/data/models/AppLogAktivitas.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
+import 'package:inven/app/global/widgets/CustomTxtForm.dart';
+import 'package:inven/app/modules/admin/controllers/admin_activity_log_controller.dart';
 
 class AdminActivityLogView extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final AdminActivityLogController controller = Get.put(AdminActivityLogController());
 
-  const AdminActivityLogView({Key? key, required this.scaffoldKey}) : super(key: key);
+  AdminActivityLogView({Key? key, required this.scaffoldKey}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +25,7 @@ class AdminActivityLogView extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,11 +37,14 @@ class AdminActivityLogView extends StatelessWidget {
                         color: Colors.grey[600],
                       ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+
+                // Search and Filters
+                _buildSearchAndFilters(context),
+                const SizedBox(height: 16),
 
                 // Header Tabel (Hanya di desktop/tablet)
                 if (MediaQuery.of(context).size.width > 600) _buildTableHeader(context),
-
                 const SizedBox(height: 16),
 
                 // Daftar Aktivitas
@@ -46,6 +54,87 @@ class AdminActivityLogView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSearchAndFilters(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          // Search bar
+          CustomTxtForm(
+            Label: 'Cari aktivitas...',
+            Controller: controller.searchController,
+            Focus: FocusNode(),
+            OnSubmit: (val) {
+              controller.onSearchChanged(val!);
+            },
+            OnChange: (val) {
+              controller.onSearchChanged(val!);
+            },
+          ),
+          const SizedBox(height: 12),
+
+          // Filter row
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Action',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  ),
+                  value: controller.selectedAction.value.isEmpty ? null : controller.selectedAction.value,
+                  items: [
+                    const DropdownMenuItem(value: '', child: Text('All Actions')),
+                    ...controller.getUniqueActions().map((action) => DropdownMenuItem(
+                      value: action,
+                      child: Text(action),
+                    )).toList(),
+                  ],
+                  onChanged: controller.onActionFilterChanged,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: 'Entity',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  ),
+                  value: controller.selectedEntity.value.isEmpty ? null : controller.selectedEntity.value,
+                  items: [
+                    const DropdownMenuItem(value: '', child: Text('All Entities')),
+                    ...controller.getUniqueEntities().map((entity) => DropdownMenuItem(
+                      value: entity,
+                      child: Text(entity),
+                    )).toList(),
+                  ],
+                  onChanged: controller.onEntityFilterChanged,
+                ),
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: controller.refreshLogs,
+                tooltip: 'Refresh logs',
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -69,81 +158,38 @@ class AdminActivityLogView extends StatelessWidget {
   }
 
   Widget _buildActivityList(BuildContext context) {
-    final List<Map<String, dynamic>> logs = [
-      {
-        'userName': 'Petugas 1',
-        'userId': 'ID: 2',
-        'action': 'Approved',
-        'entity': 'Peminjaman #2',
-        'time': '10 Mar 2024, 10.30',
-        'avatarLetter': 'P',
-        'actionColor': Colors.green.withOpacity(0.1),
-        'actionTextColor': Colors.green,
-      },
-      {
-        'userName': 'Admin Utama',
-        'userId': 'ID: 1',
-        'action': 'Created',
-        'entity': 'Alat: Laptop Asus ROG',
-        'time': '9 Mar 2024, 15.20',
-        'avatarLetter': 'A',
-        'actionColor': Colors.green.withOpacity(0.1),
-        'actionTextColor': Colors.green,
-      },
-      {
-        'userName': 'Budi Santoso',
-        'userId': 'ID: 3',
-        'action': 'Submitted',
-        'entity': 'Peminjaman #1',
-        'time': '15 Mar 2024, 11.00',
-        'avatarLetter': 'B',
-        'actionColor': Colors.amber.withOpacity(0.1),
-        'actionTextColor': Colors.amber,
-      },
-      {
-        'userName': 'Petugas 1',
-        'userId': 'ID: 2',
-        'action': 'Confirmed Return',
-        'entity': 'Peminjaman #3',
-        'time': '8 Mar 2024, 16.45',
-        'avatarLetter': 'P',
-        'actionColor': Colors.blue.withOpacity(0.1),
-        'actionTextColor': Colors.blue,
-      },
-    ];
-
-    return Column(
-      children: List.generate(logs.length, (index) {
-        final log = logs[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: _buildActivityCard(
-            context: context,
-            userName: log['userName'],
-            userId: log['userId'],
-            action: log['action'],
-            entity: log['entity'],
-            time: log['time'],
-            avatarLetter: log['avatarLetter'],
-            actionColor: log['actionColor'],
-            actionTextColor: log['actionTextColor'],
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32),
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
         );
-      }),
-    );
+      }
+
+      final logs = controller.filteredLogs;
+
+      if (logs.isEmpty) {
+        return _buildEmptyState();
+      }
+
+      return Expanded(
+        child: ListView.builder(
+          itemCount: logs.length,
+          itemBuilder: (context, index) {
+            final log = logs[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildActivityCard(context, log),
+            );
+          },
+        ),
+      );
+    });
   }
 
-  Widget _buildActivityCard({
-    required BuildContext context,
-    required String userName,
-    required String userId,
-    required String action,
-    required String entity,
-    required String time,
-    required String avatarLetter,
-    required Color actionColor,
-    required Color actionTextColor,
-  }) {
+  Widget _buildActivityCard(BuildContext context, AppLogAktivitas log) {
     final isMobile = MediaQuery.of(context).size.width <= 600;
 
     return Container(
@@ -160,40 +206,13 @@ class AdminActivityLogView extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: isMobile
-            ? _buildMobileCardContent(
-                userName,
-                userId,
-                action,
-                entity,
-                time,
-                avatarLetter,
-                actionColor,
-                actionTextColor,
-              )
-            : _buildDesktopCardContent(
-                userName,
-                userId,
-                action,
-                entity,
-                time,
-                avatarLetter,
-                actionColor,
-                actionTextColor,
-              ),
+            ? _buildMobileCardContent(log)
+            : _buildDesktopCardContent(log),
       ),
     );
   }
 
-  Widget _buildMobileCardContent(
-    String userName,
-    String userId,
-    String action,
-    String entity,
-    String time,
-    String avatarLetter,
-    Color actionColor,
-    Color actionTextColor,
-  ) {
+  Widget _buildMobileCardContent(AppLogAktivitas log) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,7 +228,7 @@ class AdminActivityLogView extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  avatarLetter,
+                  log.getAvatarLetter(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -223,23 +242,30 @@ class AdminActivityLogView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(userId, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  Text(
+                    log.getUserDisplay(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (log.penggunaId != null)
+                    Text(
+                      'ID: ${log.penggunaId}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
                 ],
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: actionColor,
+                color: log.getActionColor(),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                action,
+                log.getActionDisplay(),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: actionTextColor,
+                  color: log.getActionTextColor(),
                 ),
               ),
             ),
@@ -249,30 +275,25 @@ class AdminActivityLogView extends StatelessWidget {
 
         // Entity
         Text(
-          'Entity: $entity',
+          'Entity: ${log.entitas}${log.entitasId != null ? ' #${log.entitasId}' : ''}',
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
 
+        // Detailed changes for update actions
+        if (log.aksi.toLowerCase() == 'updated' || log.aksi.toLowerCase() == 'update')
+          _buildChangeDetails(log),
+        
         // Time
         Text(
-          time,
+          log.getTimeDisplay(),
           style: TextStyle(fontSize: 13, color: Colors.grey[700]),
         ),
       ],
     );
   }
 
-  Widget _buildDesktopCardContent(
-    String userName,
-    String userId,
-    String action,
-    String entity,
-    String time,
-    String avatarLetter,
-    Color actionColor,
-    Color actionTextColor,
-  ) {
+  Widget _buildDesktopCardContent(AppLogAktivitas log) {
     return Row(
       children: [
         Container(
@@ -284,7 +305,7 @@ class AdminActivityLogView extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              avatarLetter,
+              log.getAvatarLetter(),
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -299,8 +320,15 @@ class AdminActivityLogView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(userId, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              Text(
+                log.getUserDisplay(),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              if (log.penggunaId != null)
+                Text(
+                  'ID: ${log.penggunaId}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
             ],
           ),
         ),
@@ -309,16 +337,16 @@ class AdminActivityLogView extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: actionColor,
+              color: log.getActionColor(),
               borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
               child: Text(
-                action,
+                log.getActionDisplay(),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: actionTextColor,
+                  color: log.getActionTextColor(),
                 ),
               ),
             ),
@@ -326,21 +354,152 @@ class AdminActivityLogView extends StatelessWidget {
         ),
         Expanded(
           flex: 3,
-          child: Text(
-            entity,
-            style: const TextStyle(fontSize: 14),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${log.entitas}${log.entitasId != null ? ' #${log.entitasId}' : ''}',
+                style: const TextStyle(fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              // Detailed changes for update actions
+              if (log.aksi.toLowerCase() == 'updated' || log.aksi.toLowerCase() == 'update')
+                _buildChangeDetails(log),
+            ],
           ),
         ),
         Expanded(
           flex: 2,
           child: Text(
-            time,
+            log.getTimeDisplay(),
             style: TextStyle(fontSize: 14, color: Colors.grey[700]),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildChangeDetails(AppLogAktivitas log) {
+    if ((log.nilaiLama == null || log.nilaiLama!.isEmpty) && 
+        (log.nilaiBaru == null || log.nilaiBaru!.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Changes:',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 4),
+          if (log.nilaiLama != null && log.nilaiLama!.isNotEmpty) ...[
+            const Text(
+              'From:',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
+                color: Colors.red,
+              ),
+            ),
+            Text(
+              _formatJsonData(log.nilaiLama!),
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.red,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
+          if (log.nilaiBaru != null && log.nilaiBaru!.isNotEmpty) ...[
+            const Text(
+              'To:',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
+                color: Colors.green,
+              ),
+            ),
+            Text(
+              _formatJsonData(log.nilaiBaru!),
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.green,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatJsonData(Map<String, dynamic> data) {
+    if (data.isEmpty) return 'No data';
+    
+    List<String> changes = [];
+    data.forEach((key, value) {
+      changes.add('$key: $value');
+    });
+    
+    return changes.join('\n');
+  }
+
+  Widget _buildEmptyState() {
+    return Expanded(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history_toggle_off,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No activity logs found',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'There are no activity records matching your criteria',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: controller.refreshLogs,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

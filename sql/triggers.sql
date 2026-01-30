@@ -1,6 +1,17 @@
 CREATE OR REPLACE FUNCTION public.log_activity_fn()
 RETURNS trigger AS $$
+DECLARE
+  entity_id bigint;
 BEGIN
+  -- Handle different ID types based on table
+  IF TG_TABLE_NAME = 'profil_pengguna' THEN
+    -- For profil_pengguna, don't store the UUID in entitas_id (bigint column)
+    entity_id := NULL;
+  ELSE
+    -- For other tables, cast the ID to bigint
+    entity_id := COALESCE(NEW.id, OLD.id)::bigint;
+  END IF;
+
   INSERT INTO public.log_aktivitas (
     pengguna_id,
     aksi,
@@ -13,7 +24,7 @@ BEGIN
     auth.uid(),              -- user yang login
     TG_OP,                   -- INSERT / UPDATE / DELETE
     TG_TABLE_NAME,           -- nama tabel
-    COALESCE(NEW.id, OLD.id),
+    entity_id,
     to_jsonb(OLD),
     to_jsonb(NEW)
   );
@@ -32,6 +43,10 @@ FOR EACH ROW EXECUTE FUNCTION public.log_activity_fn();
 
 CREATE TRIGGER log_alat
 AFTER INSERT OR UPDATE OR DELETE ON public.alat
+FOR EACH ROW EXECUTE FUNCTION public.log_activity_fn();
+
+CREATE TRIGGER log_profil_pengguna
+AFTER INSERT OR UPDATE OR DELETE ON public.profil_pengguna
 FOR EACH ROW EXECUTE FUNCTION public.log_activity_fn();
 
 CREATE OR REPLACE FUNCTION public.kurangi_stok_alat()
