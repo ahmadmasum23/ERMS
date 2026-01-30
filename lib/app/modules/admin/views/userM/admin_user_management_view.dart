@@ -8,7 +8,7 @@ class AdminUserManagementView extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   AdminUserManagementView({Key? key, required this.scaffoldKey})
-    : super(key: key);
+      : super(key: key);
 
   final AdminUserController controller = Get.put(AdminUserController());
 
@@ -35,44 +35,10 @@ class AdminUserManagementView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _header(context, isMobile),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(child: _buildRoleFilter()),
-                    const SizedBox(width: 12),
-                    _addButton(isMobile),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                /// 🔥 LIST USER REALTIME
-                Expanded(
-                  child: Obx(() {
-                    if (controller.isLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    final users = controller.users.where((u) {
-                      if (controller.selectedRole.value == 'semua') return true;
-                      return _roleName(u.peranId) ==
-                          controller.selectedRole.value;
-                    }).toList();
-
-                    if (users.isEmpty) {
-                      return const Center(child: Text("Tidak ada user"));
-                    }
-
-                    return ListView.builder(
-                      itemCount: users.length,
-                      itemBuilder: (context, index) {
-                        final user = users[index];
-                        return isMobile
-                            ? _buildUserCardMobile(user, context)
-                            : _buildUserRowDesktop(user, context);
-                      },
-                    );
-                  }),
-                ),
+                const SizedBox(height: 16),
+                _buildFilterSection(isMobile),
+                const SizedBox(height: 16),
+                _buildUserList(),
               ],
             ),
           ),
@@ -81,7 +47,6 @@ class AdminUserManagementView extends StatelessWidget {
     );
   }
 
-  // ================= HEADER =================
   Widget _header(BuildContext context, bool isMobile) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -91,35 +56,279 @@ class AdminUserManagementView extends StatelessWidget {
           children: [
             Text(
               'User Management',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: isMobile ? 17 : 19,
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               'Kelola data pengguna sistem',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+                fontSize: isMobile ? 12 : 13,
+              ),
             ),
           ],
         ),
-        if (!isMobile) _addButton(false),
+        if (!isMobile) _buildAddButton(false),
       ],
     );
   }
 
-  Widget _addButton(bool isMobile) {
+  Widget _buildFilterSection(bool isMobile) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Icon(Icons.filter_list, size: 19, color: Colors.grey[700]),
+                const SizedBox(width: 10),
+                const Text(
+                  'Filter Role:',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(child: _buildRoleFilter()),
+              ],
+            ),
+          ),
+          if (isMobile) ...[
+            const SizedBox(width: 14),
+            _buildAddButton(isMobile),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddButton(bool isMobile) {
     return SizedBox(
-      width: isMobile ? 120 : 140,
+      width: isMobile ? 125 : 145,
+      height: 40,
       child: ElevatedButton.icon(
         onPressed: () => _showAddUserDialog(),
-        icon: const Icon(Icons.add, size: 18),
+        icon: const Icon(Icons.add, size: 17),
         label: Text(
           'Tambah User',
-          style: TextStyle(fontSize: isMobile ? 12 : 14),
+          style: TextStyle(fontSize: isMobile ? 12.5 : 13.5),
         ),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          padding: EdgeInsets.zero,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleFilter() {
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(6),
+          color: Colors.white,
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            isExpanded: true,
+            value: controller.selectedRole.value,
+            items: const [
+              DropdownMenuItem(value: 'semua', child: Text('Semua Role', style: TextStyle(fontSize: 13))),
+              DropdownMenuItem(value: 'admin', child: Text('Admin', style: TextStyle(fontSize: 13))),
+              DropdownMenuItem(value: 'petugas', child: Text('Petugas', style: TextStyle(fontSize: 13))),
+              DropdownMenuItem(value: 'peminjam', child: Text('Peminjam', style: TextStyle(fontSize: 13))),
+            ],
+            onChanged: (v) => controller.selectedRole.value = v!,
+            style: const TextStyle(fontSize: 13),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserList() {
+    return Expanded(
+      child: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+        }
+
+        final users = controller.users.where((u) {
+          if (controller.selectedRole.value == 'semua') return true;
+          return controller.getRoleNameById(u.peranId) == controller.selectedRole.value;
+        }).toList();
+
+        if (users.isEmpty) {
+          return _emptyState();
+        }
+
+        return ListView.builder(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            final user = users[index];
+            return _buildUserItem(user, context);
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _emptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.people_outline, size: 60, color: Colors.grey[400]),
+          const SizedBox(height: 14),
+          Text(
+            "Tidak ada user ditemukan",
+            style: TextStyle(fontSize: 17, color: Colors.grey[600], fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Coba ubah filter role atau tambah user baru",
+            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserItem(AppUser user, BuildContext context) {
+    final role = controller.getRoleNameById(user.peranId);
+    final roleColor = _roleColor(role);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: const Color(0xffF4F7F7),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Center(
+                    child: Text(
+                      user.nama.isNotEmpty ? user.nama[0].toUpperCase() : '?',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.nama,
+                        style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w600, color: Colors.black),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        user.email,
+                        style: const TextStyle(fontSize: 15, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.edit, size: 17, color: Colors.blue),
+                      onPressed: () => _showEditUserDialog(user),
+                    ),
+                    const SizedBox(height: 2),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.delete, size: 17, color: Colors.red),
+                      onPressed: () => _confirmDeleteUser(user),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.phone_outlined, size: 17, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(user.nomorHp ?? '-', style: const TextStyle(fontSize: 15)),
+                  ],
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: roleColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    role.toLowerCase(),
+                    style: TextStyle(fontSize: 13, color: roleColor, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.location_on_outlined, size: 13, color: Colors.grey),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    user.alamat ?? '-',
+                    style: const TextStyle(fontSize: 13.5, color: Colors.black87),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -130,248 +339,221 @@ class AdminUserManagementView extends StatelessWidget {
     final emailController = TextEditingController();
     final passController = TextEditingController();
     final alamatController = TextEditingController();
-final hpController = TextEditingController();
+    final hpController = TextEditingController();
     final selectedRole = 'admin'.obs;
 
     Get.dialog(
       AlertDialog(
-        title: const Text("Tambah User Baru"),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "Nama"),
-                validator: (value) =>
-                    value == null || value.isEmpty ? "Nama wajib diisi" : null,
-              ),
-              TextFormField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                validator: (value) =>
-                    value == null || value.isEmpty ? "Email wajib diisi" : null,
-              ),
-              TextFormField(
-                controller: passController,
-                decoration: const InputDecoration(labelText: "Password"),
-                obscureText: true,
-                validator: (value) => value == null || value.isEmpty
-                    ? "Password wajib diisi"
-                    : null,
-              ),
-              TextFormField(
-  controller: alamatController,
-  decoration: const InputDecoration(labelText: "Alamat"),
-  validator: (v) => v == null || v.isEmpty ? "Alamat wajib diisi" : null,
-),
-TextFormField(
-  controller: hpController,
-  decoration: const InputDecoration(labelText: "Nomor HP"),
-  keyboardType: TextInputType.phone,
-  validator: (v) => v == null || v.isEmpty ? "Nomor HP wajib diisi" : null,
-),
-
-              const SizedBox(height: 10),
-              Obx(
-                () => DropdownButtonFormField<String>(
-                  value: selectedRole.value,
-                  decoration: const InputDecoration(labelText: "Role"),
-                  items: const [
-                    DropdownMenuItem(value: 'admin', child: Text("Admin")),
-                    DropdownMenuItem(value: 'petugas', child: Text("Petugas")),
-                    DropdownMenuItem(
-                      value: 'peminjam',
-                      child: Text("Peminjam"),
+        title: const Text("Tambah User Baru", style: TextStyle(fontSize: 16)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildDialogField(controller: nameController, label: "Nama", validator: (v) => v?.isEmpty ?? true ? "Nama wajib diisi" : null),
+                  _buildDialogField(
+                    controller: emailController,
+                    label: "Email",
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) => v?.isEmpty ?? true ? "Email wajib diisi" : !GetUtils.isEmail(v!) ? "Format email tidak valid" : null,
+                  ),
+                  _buildDialogField(
+                    controller: passController,
+                    label: "Password",
+                    obscureText: true,
+                    validator: (v) => (v?.length ?? 0) < 6 ? "Password minimal 6 karakter" : null,
+                  ),
+                  _buildDialogField(controller: alamatController, label: "Alamat", validator: (v) => v?.isEmpty ?? true ? "Alamat wajib diisi" : null),
+                  _buildDialogField(
+                    controller: hpController,
+                    label: "Nomor HP",
+                    keyboardType: TextInputType.phone,
+                    validator: (v) => v?.isEmpty ?? true ? "Nomor HP wajib diisi" : null,
+                  ),
+                  const SizedBox(height: 14),
+                  Obx(
+                    () => DropdownButtonFormField<String>(
+                      value: selectedRole.value,
+                      decoration: InputDecoration(labelText: "Role", border: OutlineInputBorder(borderRadius: BorderRadius.circular(6))),
+                      items: const [
+                        DropdownMenuItem(value: 'admin', child: Text("Admin")),
+                        DropdownMenuItem(value: 'petugas', child: Text("Petugas")),
+                        DropdownMenuItem(value: 'peminjam', child: Text("Peminjam")),
+                      ],
+                      onChanged: (v) => selectedRole.value = v!,
+                      style: const TextStyle(fontSize: 14),
                     ),
-                  ],
-                  onChanged: (v) => selectedRole.value = v!,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-          ElevatedButton(
-            onPressed: () {
-  if (_formKey.currentState!.validate()) {
-    controller.addUser(
-      nama: nameController.text.trim(),
-      email: emailController.text.trim(),
-      password: passController.text.trim(),
-      peran: selectedRole.value,
-      alamat: alamatController.text.trim(),
-      nomorHp: hpController.text.trim(),
-    );
-    Get.back();
-  }
-},
-
-            child: const Text("Simpan"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ================= FILTER =================
-  Widget _buildRoleFilter() {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(6),
-          color: Colors.white,
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: controller.selectedRole.value,
-            items: const [
-              DropdownMenuItem(value: 'semua', child: Text('Semua Role')),
-              DropdownMenuItem(value: 'admin', child: Text('Admin')),
-              DropdownMenuItem(value: 'petugas', child: Text('Petugas')),
-              DropdownMenuItem(value: 'peminjam', child: Text('Peminjam')),
-            ],
-            onChanged: (v) => controller.selectedRole.value = v!,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ================= MOBILE CARD =================
-  Widget _buildUserCardMobile(AppUser user, BuildContext context) {
-    final role = _roleName(user.peranId);
-    final roleColor = _roleColor(role);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _avatar(user.nama),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.nama,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      user.email,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-              _actions(user),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _infoRow(Icons.person_outline, role, roleColor),
-        ],
-      ),
-    );
-  }
-
-  // ================= DESKTOP ROW =================
-  Widget _buildUserRowDesktop(AppUser user, BuildContext context) {
-    final role = _roleName(user.peranId);
-    final roleColor = _roleColor(role);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          _avatar(user.nama),
-          const SizedBox(width: 12),
-          Expanded(flex: 2, child: Text(user.nama)),
-          Expanded(flex: 3, child: Text(user.email)),
-          Expanded(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: roleColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                role,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: roleColor),
+                  ),
+                ],
               ),
             ),
           ),
-          _actions(user),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text("Batal", style: TextStyle(fontSize: 14))),
+          Obx(() => ElevatedButton(
+            onPressed: controller.isLoading.value
+                ? null
+                : () async {
+                    if (_formKey.currentState!.validate()) {
+                      final success = await controller.addUser(
+                        nama: nameController.text.trim(),
+                        email: emailController.text.trim(),
+                        password: passController.text.trim(),
+                        peran: selectedRole.value,
+                        alamat: alamatController.text.trim(),
+                        nomorHp: hpController.text.trim(),
+                      );
+                      if (success) Get.back();
+                    }
+                  },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.black, minimumSize: const Size(90, 36)),
+            child: controller.isLoading.value
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text("Simpan", style: TextStyle(fontSize: 14)),
+          )),
         ],
       ),
     );
   }
 
-  // ================= HELPERS =================
-  Widget _avatar(String? name) => Container(
-    width: 32,
-    height: 32,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(4),
-    ),
-    child: Text(_initials(name), style: const TextStyle(color: Colors.white)),
-  );
+  void _showEditUserDialog(AppUser user) {
+    final _formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController(text: user.nama);
+    final emailController = TextEditingController(text: user.email); // Read-only
+    final alamatController = TextEditingController(text: user.alamat ?? '');
+    final hpController = TextEditingController(text: user.nomorHp ?? '');
+    final selectedRole = controller.getRoleNameById(user.peranId).obs;
 
-  Widget _actions(AppUser user) => Row(
-    children: [
-      IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () {}),
-      IconButton(
-        icon: const Icon(Icons.delete, size: 18),
-        onPressed: () => controller.deleteUser(user.id),
-      ),
-    ],
-  );
-
-  Widget _infoRow(IconData icon, String text, Color color) => Row(
-    children: [
-      Icon(icon, size: 16, color: Colors.grey),
-      const SizedBox(width: 6),
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(5),
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Edit User", style: TextStyle(fontSize: 16)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildDialogField(controller: nameController, label: "Nama", validator: (v) => v?.isEmpty ?? true ? "Nama wajib diisi" : null),
+                  
+                  // EMAIL READ-ONLY (tidak bisa di-edit karena di auth system)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 7.0),
+                    child: TextFormField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        labelText: "Email",
+                        labelStyle: const TextStyle(fontSize: 14),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                          borderSide: const BorderSide(color: Colors.grey),
+                        ),
+                      ),
+                      readOnly: true, // 🔑 EMAIL TIDAK BISA DI-EDIT
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ),
+                  
+                  _buildDialogField(controller: alamatController, label: "Alamat", validator: (v) => v?.isEmpty ?? true ? "Alamat wajib diisi" : null),
+                  _buildDialogField(
+                    controller: hpController,
+                    label: "Nomor HP",
+                    keyboardType: TextInputType.phone,
+                    validator: (v) => v?.isEmpty ?? true ? "Nomor HP wajib diisi" : null,
+                  ),
+                  const SizedBox(height: 14),
+                  Obx(
+                    () => DropdownButtonFormField<String>(
+                      value: selectedRole.value,
+                      decoration: InputDecoration(labelText: "Role", border: OutlineInputBorder(borderRadius: BorderRadius.circular(6))),
+                      items: const [
+                        DropdownMenuItem(value: 'admin', child: Text("Admin")),
+                        DropdownMenuItem(value: 'petugas', child: Text("Petugas")),
+                        DropdownMenuItem(value: 'peminjam', child: Text("Peminjam")),
+                      ],
+                      onChanged: (v) => selectedRole.value = v!,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        child: Text(text, style: TextStyle(color: color, fontSize: 10)),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text("Batal", style: TextStyle(fontSize: 14))),
+          Obx(() => ElevatedButton(
+            onPressed: controller.isLoading.value
+                ? null
+                : () async {
+                    if (_formKey.currentState!.validate()) {
+                      final success = await controller.updateUser(
+                        email: emailController.text.trim(),
+                        userId: user.id,
+                        nama: nameController.text.trim(),
+                        peran: selectedRole.value, // 🔑 TANPA EMAIL
+                        alamat: alamatController.text.trim(),
+                        nomorHp: hpController.text.trim(),
+                      );
+                      if (success) Get.back();
+                    }
+                  },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.black, minimumSize: const Size(110, 36)),
+            child: controller.isLoading.value
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text("Simpan Perubahan", style: TextStyle(fontSize: 14)),
+          )),
+        ],
       ),
-    ],
-  );
-
-  String _initials(String? name) {
-    if (name == null || name.trim().isEmpty) return "?";
-
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-
-    return (parts[0][0] + parts[1][0]).toUpperCase();
+    );
   }
 
-  String _roleName(int id) =>
-      {1: 'admin', 2: 'petugas', 3: 'peminjam'}[id] ?? 'unknown';
+  Widget _buildDialogField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+    required FormFieldValidator<String?> validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontSize: 14),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        validator: validator,
+        style: const TextStyle(fontSize: 14),
+      ),
+    );
+  }
 
-  Color _roleColor(String role) => role == 'admin'
-      ? Colors.purple
-      : role == 'petugas'
-      ? Colors.green
-      : Colors.blue;
+  void _confirmDeleteUser(AppUser user) {
+    Get.defaultDialog(
+      title: "⚠️ Konfirmasi Hapus",
+      middleText: "Yakin hapus user '${user.nama}'?\nTindakan ini tidak dapat dibatalkan!",
+      textCancel: "Batal",
+      textConfirm: "Hapus",
+      confirmTextColor: Colors.white,
+      cancelTextColor: Colors.black,
+      buttonColor: Colors.red,
+      onConfirm: () async {
+        Get.back();
+        await controller.deleteUser(user.id);
+      },
+      onCancel: () => Get.back(),
+    );
+  }
+
+  Color _roleColor(String role) => role == 'admin' ? Colors.purple : role == 'petugas' ? Colors.green : Colors.blue;
 }
