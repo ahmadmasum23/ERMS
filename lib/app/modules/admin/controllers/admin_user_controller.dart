@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/models/AppUser.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../data/services/user_service.dart';
 import '../../../data/services/database_service_provider.dart';
 
 class AdminUserController extends GetxController {
-  final UserService _userService = UserService();
+
 
   var users = <AppUser>[].obs;
   var isLoading = false.obs;
@@ -18,7 +17,6 @@ class AdminUserController extends GetxController {
     super.onInit();
   }
 
-  // ================= FETCH USERS =================
   Future<void> fetchUsers() async {
     try {
       isLoading.value = true;
@@ -47,7 +45,6 @@ class AdminUserController extends GetxController {
     }
   }
 
-  // ================= ADD USER =================
   Future<bool> addUser({
     required String email,
     required String password,
@@ -95,11 +92,10 @@ class AdminUserController extends GetxController {
     }
   }
 
-  // ================= UPDATE USER =================
  Future<bool> updateUser({
   required String userId,
   required String nama,
-  required String peran, // string: admin/petugas/peminjam
+  required String peran, 
   required String alamat,
   required String nomorHp,
 }) async {
@@ -108,13 +104,13 @@ class AdminUserController extends GetxController {
 
     final updateData = {
       'nama_lengkap': nama,
-      'peran': peran, // ✅ LANGSUNG STRING
+      'peran': peran, 
       'alamat': alamat,
       'nomor_hp': nomorHp,
     };
 
     await Supabase.instance.client
-        .from('profil_pengguna') // ✅ TABEL YANG BENAR
+        .from('profil_pengguna')
         .update(updateData)
         .eq('id', userId);
 
@@ -144,16 +140,10 @@ class AdminUserController extends GetxController {
   }
 }
 
-
-  // ================= DELETE USER =================
   Future<bool> deleteUser(String userId) async {
     try {
       isLoading.value = true;
-
-      // Delete user from auth first
       await Supabase.instance.client.auth.admin.deleteUser(userId);
-
-      // Then delete from users table
       await Supabase.instance.client
           .from('users')
           .delete()
@@ -186,7 +176,6 @@ class AdminUserController extends GetxController {
     }
   }
 
-  // ================= HELPERS =================
   String _roleName(int id) =>
       {1: 'admin', 2: 'petugas', 3: 'peminjam'}[id] ?? 'unknown';
 
