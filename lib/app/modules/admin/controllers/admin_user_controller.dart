@@ -96,63 +96,54 @@ class AdminUserController extends GetxController {
   }
 
   // ================= UPDATE USER =================
-  Future<bool> updateUser({
-    required String userId,
-    required String nama,
-    required String email,
-    required String peran,
-    required String alamat,
-    required String nomorHp,
-  }) async {
-    try {
-      isLoading.value = true;
+ Future<bool> updateUser({
+  required String userId,
+  required String nama,
+  required String peran, // string: admin/petugas/peminjam
+  required String alamat,
+  required String nomorHp,
+}) async {
+  try {
+    isLoading.value = true;
 
-      // Convert role string to peran_id integer
-      final peranId = _roleToId(peran);
+    final updateData = {
+      'nama_lengkap': nama,
+      'peran': peran, // ✅ LANGSUNG STRING
+      'alamat': alamat,
+      'nomor_hp': nomorHp,
+    };
 
-      // Build update data
-      final updateData = {
-        'nama_lengkap': nama,
-        'email': email,
-        'id_peran': peranId,
-        'alamat': alamat,
-        'nomor_hp': nomorHp,
-      };
+    await Supabase.instance.client
+        .from('profil_pengguna') // ✅ TABEL YANG BENAR
+        .update(updateData)
+        .eq('id', userId);
 
-      // Update user data
-      await Supabase.instance.client
-          .from('users')
-          .update(updateData)
-          .eq('id', userId)
-          .select()
-          .single();
+    await fetchUsers();
 
-      await fetchUsers();
-      
-      Get.snackbar(
-        "✓ Berhasil",
-        "Data user '$nama' berhasil diperbarui",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade50,
-        colorText: Colors.green.shade900,
-        duration: Duration(seconds: 3),
-      );
-      
-      return true;
-    } catch (e) {
-      Get.snackbar(
-        "✗ Gagal",
-        "Gagal memperbarui user. Coba lagi nanti.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade900,
-      );
-      print("ERROR UPDATE USER: $e");
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
+    Get.snackbar(
+      "✓ Berhasil",
+      "Data user berhasil diperbarui",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green.shade50,
+      colorText: Colors.green.shade900,
+    );
+
+    return true;
+  } catch (e) {
+    print("ERROR UPDATE USER: $e");
+    Get.snackbar(
+      "✗ Gagal",
+      "Gagal memperbarui user",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red.shade50,
+      colorText: Colors.red.shade900,
+    );
+    return false;
+  } finally {
+    isLoading.value = false;
   }
+}
+
 
   // ================= DELETE USER =================
   Future<bool> deleteUser(String userId) async {

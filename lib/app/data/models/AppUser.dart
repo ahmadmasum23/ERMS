@@ -20,10 +20,9 @@ class AppUser {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'id_peran': peranId,
+      'peran': _mapIdToRole(peranId), // ⬅️ UBAH DI SINI
       'nama_lengkap': nama,
       'email': email,
-      'password': pass,
       'alamat': alamat,
       'nomor_hp': nomorHp,
     };
@@ -33,7 +32,6 @@ class AppUser {
     return AppUser(
       id: json['id']?.toString() ?? '',
       peranId: _mapRoleToId(json['peran']),
-      // peranId: int.tryParse(json['peran']?.toString() ?? '0') ?? 0,
       nama: json['nama_lengkap']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       pass: '',
@@ -42,6 +40,7 @@ class AppUser {
     );
   }
 
+  /// DB → APP
   static int _mapRoleToId(dynamic role) {
     switch (role?.toString()) {
       case 'admin':
@@ -52,6 +51,20 @@ class AppUser {
         return 3;
       default:
         return 0;
+    }
+  }
+
+  /// APP → DB
+  static String _mapIdToRole(int id) {
+    switch (id) {
+      case 1:
+        return 'admin';
+      case 2:
+        return 'petugas';
+      case 3:
+        return 'peminjam';
+      default:
+        return 'peminjam';
     }
   }
 }
