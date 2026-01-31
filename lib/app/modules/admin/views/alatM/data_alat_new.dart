@@ -18,12 +18,28 @@ class DataAlatNew extends StatelessWidget {
     final stok = model.stok;
     final urlGambar = model.urlGambar;
     final dibuatPada = model.dibuatPada;
+    final kodeAlat = model.kodeAlat ?? 'N/A';
+    final status = model.status;
 
     // Format kondisi text
     String kondisiText = kondisi;
     if (kondisi == 'baik') kondisiText = 'Baik';
     if (kondisi == 'rusak_ringan') kondisiText = 'Rusak Ringan';
     if (kondisi == 'rusak_berat') kondisiText = 'Rusak Berat';
+
+    // Format status text
+    String statusText = status;
+    Color statusColor = Colors.grey;
+    if (status == 'tersedia') {
+      statusText = 'Tersedia';
+      statusColor = Colors.green;
+    } else if (status == 'dipinjam') {
+      statusText = 'Dipinjam';
+      statusColor = Colors.orange;
+    } else if (status == 'tidak_layak') {
+      statusText = 'Tidak Layak';
+      statusColor = Colors.red;
+    }
 
     // Format date
     String tanggalText = 'Belum ada tanggal';
@@ -41,6 +57,8 @@ class DataAlatNew extends StatelessWidget {
     print('Stok: $stok');
     print('URL Gambar: $urlGambar');
     print('Tanggal Dibuat: $tanggalText');
+    print('Kode Alat: $kodeAlat');
+    print('Status: $status');
     print('====================');
 
     return Container(
@@ -65,14 +83,18 @@ class DataAlatNew extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.grey[100],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
             ),
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: _buildMediumImageWidget(urlGambar),
             ),
           ),
-          
+
           // Product Information Section
           Padding(
             padding: const EdgeInsets.all(12),
@@ -91,12 +113,52 @@ class DataAlatNew extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Product Details Row
-                _buildCompactProductDetailsRow(kodeKategori, kategori, kondisiText, stok),
-                
+                _buildCompactProductDetailsRow(
+                  kodeKategori,
+                  kategori,
+                  kondisiText,
+                  stok,
+                ),
+
                 const SizedBox(height: 12),
-                
+
+                // Status badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        status == 'tersedia' 
+                          ? Icons.check_circle
+                          : status == 'dipinjam' 
+                            ? Icons.access_time
+                            : Icons.cancel,
+                        size: 14,
+                        color: statusColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
                 // Admin Actions
                 _buildCompactAdminActions(context),
               ],
@@ -107,9 +169,14 @@ class DataAlatNew extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactProductDetailsRow(String kodeKategori, String kategori, String kondisiText, int stok) {
+  Widget _buildCompactProductDetailsRow(
+    String kodeKategori,
+    String kategori,
+    String kondisiText,
+    int stok,
+  ) {
     Color kondisiColor = _getKondisiColor(model.kondisi);
-    
+
     return Row(
       children: [
         // Kode Kategori
@@ -149,7 +216,7 @@ class DataAlatNew extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        
+
         // Kategori
         Expanded(
           flex: 3,
@@ -187,7 +254,7 @@ class DataAlatNew extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        
+
         // Kondisi
         Expanded(
           flex: 2,
@@ -225,7 +292,7 @@ class DataAlatNew extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        
+
         // Stok
         Expanded(
           flex: 2,
@@ -265,54 +332,100 @@ class DataAlatNew extends StatelessWidget {
   }
 
   Widget _buildCompactAdminActions(BuildContext context) {
+    // Debug: Cek status controller
+    print(
+      'DEBUG: GlobalUserController registered? ${Get.isRegistered<GlobalUserController>()}',
+    );
+
+    if (!Get.isRegistered<GlobalUserController>()) {
+      // Untuk debugging: tampilkan placeholder sementara
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(
+          '[Controller belum siap]',
+          style: TextStyle(color: Colors.grey[500], fontSize: 10),
+        ),
+      );
+    }
+
     return Obx(() {
       final userController = Get.find<GlobalUserController>();
       final currentUser = userController.user.value;
-      
-      if (currentUser != null && currentUser.peranId == 1) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  _showEditDialog(context, model);
-                },
-                icon: const Icon(Icons.edit, size: 14),
-                label: const Text('Edit', style: TextStyle(fontSize: 12)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  _confirmDelete(context, model);
-                },
-                icon: const Icon(Icons.delete, size: 14),
-                label: const Text('Hapus', style: TextStyle(fontSize: 12)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      } else {
-        return const SizedBox.shrink();
+
+      // Debug: Cek status user
+      print('DEBUG: currentUser = $currentUser');
+      if (currentUser != null) {
+        print('DEBUG: currentUser.peranId = ${currentUser.peranId}');
       }
+
+      if (currentUser == null) {
+        // Untuk debugging: tampilkan placeholder saat belum login
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            '[Belum login]',
+            style: TextStyle(color: Colors.blue[500], fontSize: 10),
+          ),
+        );
+      }
+
+      if (currentUser.peranId != 1) {
+        // Untuk debugging: tampilkan role user
+        final roleText = currentUser.peranId == 2
+            ? 'Operator'
+            : currentUser.peranId == 3
+            ? 'Peminjam'
+            : 'User';
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            '[Role: $roleText - Hanya admin yang bisa edit/hapus]',
+            style: TextStyle(color: Colors.orange[700], fontSize: 10),
+          ),
+        );
+      }
+
+      // Hanya tampilkan tombol untuk admin (peranId == 1)
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                _showEditDialog(context, model);
+              },
+              icon: const Icon(Icons.edit, size: 14),
+              label: const Text('Edit', style: TextStyle(fontSize: 12)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                _confirmDelete(context, model);
+              },
+              icon: const Icon(Icons.delete, size: 14),
+              label: const Text('Hapus', style: TextStyle(fontSize: 12)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
     });
   }
 
@@ -325,18 +438,28 @@ class DataAlatNew extends StatelessWidget {
           children: [
             Icon(Icons.image, size: 30, color: Colors.grey),
             SizedBox(height: 4),
-            Text('No Image', style: TextStyle(color: Colors.grey, fontSize: 10)),
+            Text(
+              'No Image',
+              style: TextStyle(color: Colors.grey, fontSize: 10),
+            ),
           ],
         ),
       );
     }
 
     print('DEBUG: Loading medium image from URL: $urlGambar');
-    
+
     // Check for blocked domains
-    final blockedDomains = ['pinimg.com', 'pinterest.com', 'instagram.com', 'facebook.com'];
-    final isBlockedDomain = blockedDomains.any((domain) => urlGambar.contains(domain));
-    
+    final blockedDomains = [
+      'pinimg.com',
+      'pinterest.com',
+      'instagram.com',
+      'facebook.com',
+    ];
+    final isBlockedDomain = blockedDomains.any(
+      (domain) => urlGambar.contains(domain),
+    );
+
     if (isBlockedDomain) {
       print('DEBUG: Blocked domain detected: $urlGambar');
       return _buildMediumErrorWidget(urlGambar, 'CORS Blocked', true);
@@ -351,7 +474,7 @@ class DataAlatNew extends StatelessWidget {
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
         print('DEBUG: Medium image failed to load. Error: $error');
-        
+
         String errorMessage = 'Failed';
         if (error.toString().contains('statusCode: 0')) {
           errorMessage = 'CORS';
@@ -360,8 +483,12 @@ class DataAlatNew extends StatelessWidget {
         } else if (error.toString().contains('404')) {
           errorMessage = 'Not Found';
         }
-        
-        return _buildMediumErrorWidget(urlGambar, errorMessage, errorMessage == 'CORS');
+
+        return _buildMediumErrorWidget(
+          urlGambar,
+          errorMessage,
+          errorMessage == 'CORS',
+        );
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
@@ -377,7 +504,8 @@ class DataAlatNew extends StatelessWidget {
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
                     : null,
               ),
             ),
@@ -387,9 +515,7 @@ class DataAlatNew extends StatelessWidget {
       cacheWidth: 200,
       cacheHeight: 120,
       filterQuality: FilterQuality.medium,
-      headers: const {
-        'Accept': 'image/*',
-      },
+      headers: const {'Accept': 'image/*'},
     );
   }
 
@@ -442,12 +568,16 @@ class DataAlatNew extends StatelessWidget {
   void _showEditDialog(BuildContext context, AppAlat alat) {
     final namaController = TextEditingController(text: alat.nama);
     final stokController = TextEditingController(text: alat.stok.toString());
-    final urlGambarController = TextEditingController(text: alat.urlGambar ?? '');
+    final urlGambarController = TextEditingController(
+      text: alat.urlGambar ?? '',
+    );
+    final kodeAlatController = TextEditingController(text: alat.kodeAlat ?? '');
     String selectedKondisi = alat.kondisi;
+    String selectedStatus = alat.status;
     int selectedKategoriId = alat.kategoriId ?? 0;
-    
+
     final controller = Get.find<AdminAlatController>();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -482,6 +612,15 @@ class DataAlatNew extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              // Kode Alat field
+              TextField(
+                controller: kodeAlatController,
+                decoration: const InputDecoration(
+                  labelText: 'Kode Alat (opsional)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
               // Kondisi Dropdown
               DropdownButtonFormField<String>(
                 value: selectedKondisi,
@@ -491,12 +630,37 @@ class DataAlatNew extends StatelessWidget {
                 ),
                 items: const [
                   DropdownMenuItem(value: 'baik', child: Text('Baik')),
-                  DropdownMenuItem(value: 'rusak_ringan', child: Text('Rusak Ringan')),
-                  DropdownMenuItem(value: 'rusak_berat', child: Text('Rusak Berat')),
+                  DropdownMenuItem(
+                    value: 'rusak_ringan',
+                    child: Text('Rusak Ringan'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'rusak_berat',
+                    child: Text('Rusak Berat'),
+                  ),
                 ],
                 onChanged: (value) {
                   if (value != null) {
                     selectedKondisi = value;
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              // Status Dropdown
+              DropdownButtonFormField<String>(
+                value: selectedStatus,
+                decoration: const InputDecoration(
+                  labelText: 'Status *',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'tersedia', child: Text('Tersedia')),
+                  DropdownMenuItem(value: 'dipinjam', child: Text('Dipinjam')),
+                  DropdownMenuItem(value: 'tidak_layak', child: Text('Tidak Layak')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    selectedStatus = value;
                   }
                 },
               ),
@@ -510,12 +674,15 @@ class DataAlatNew extends StatelessWidget {
                     border: OutlineInputBorder(),
                   ),
                   items: [
-                    const DropdownMenuItem(value: 0, child: Text('Tidak ada kategori')),
-                    ...controller.kategoriOptions.map((kategori) => 
-                      DropdownMenuItem(
+                    const DropdownMenuItem(
+                      value: 0,
+                      child: Text('Tidak ada kategori'),
+                    ),
+                    ...controller.kategoriOptions.map(
+                      (kategori) => DropdownMenuItem(
                         value: kategori.id,
                         child: Text(kategori.nama),
-                      )
+                      ),
                     ),
                   ],
                   onChanged: (value) {
@@ -541,9 +708,17 @@ class DataAlatNew extends StatelessWidget {
                   id: alat.id,
                   nama: namaController.text.trim(),
                   stok: int.tryParse(stokController.text) ?? alat.stok,
-                  urlGambar: urlGambarController.text.trim().isEmpty ? null : urlGambarController.text.trim(),
+                  urlGambar: urlGambarController.text.trim().isEmpty
+                      ? null
+                      : urlGambarController.text.trim(),
                   kondisi: selectedKondisi,
-                  kategoriId: selectedKategoriId == 0 ? null : selectedKategoriId,
+                  status: selectedStatus,
+                  kodeAlat: kodeAlatController.text.trim().isEmpty
+                      ? null
+                      : kodeAlatController.text.trim(),
+                  kategoriId: selectedKategoriId == 0
+                      ? null
+                      : selectedKategoriId,
                 );
               }
             },

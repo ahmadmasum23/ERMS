@@ -23,7 +23,7 @@ void main() async {
   runApp(
     GetMaterialApp(
       title: "Application",
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false, 
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(),
         colorScheme: AppTheme.SoftCreamyWhite.colorScheme,

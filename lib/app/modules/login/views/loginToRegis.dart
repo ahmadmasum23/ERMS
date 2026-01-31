@@ -1,9 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/modules/register/controllers/register_controller.dart';
 import 'package:inven/app/routes/app_pages.dart';
 
-class LoginToRegis extends GetView<RegisterController> {
+class LoginToRegis extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(

@@ -60,17 +60,26 @@ class AlatService {
     required String kondisi,
     String? urlGambar,
     int stok = 1,
+    String? kodeAlat,
+    String status = 'tersedia',
   }) async {
     try {
+      final insertData = {
+        'nama': nama,
+        'kategori_id': kategoriId,
+        'kondisi': kondisi,
+        'url_gambar': urlGambar,
+        'stok': stok,
+        'status': status,
+      };
+      
+      if (kodeAlat != null) {
+        insertData['kode_alat'] = kodeAlat;
+      }
+      
       final response = await _supabase
           .from('alat')
-          .insert({
-            'nama': nama,
-            'kategori_id': kategoriId,
-            'kondisi': kondisi,
-            'url_gambar': urlGambar,
-            'stok': stok,
-          })
+          .insert(insertData)
           .select('*, kategori:kategori_id(*)')
           .single();
       
@@ -88,6 +97,8 @@ class AlatService {
     String? kondisi,
     String? urlGambar,
     int? stok,
+    String? kodeAlat,
+    String? status,
   }) async {
     try {
       final Map<String, dynamic> updateData = {};
@@ -97,6 +108,8 @@ class AlatService {
       if (kondisi != null) updateData['kondisi'] = kondisi;
       if (urlGambar != null) updateData['url_gambar'] = urlGambar;
       if (stok != null) updateData['stok'] = stok;
+      if (kodeAlat != null) updateData['kode_alat'] = kodeAlat;
+      if (status != null) updateData['status'] = status;
 
       await _supabase
           .from('alat')

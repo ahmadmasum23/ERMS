@@ -65,7 +65,7 @@ class AdminUserManagementView extends StatelessWidget {
             Text(
               'Kelola data pengguna sistem',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: Colors.grey[600], 
                 fontSize: isMobile ? 12 : 13,
               ),
             ),

@@ -24,7 +24,7 @@ class RegisterPanel extends GetView<RegisterController> {
           child: Column(
             children: [
               const Text(
-                'Sistem Inventaris Sekawan Media',
+                'Sistem Peminjaman Alat untuk Jurusan Tata Busana',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -35,7 +35,7 @@ class RegisterPanel extends GetView<RegisterController> {
               const SizedBox(height: 20),
               
               const Text(
-                'Aplikasi ini menggunakan data statis untuk demonstrasi.\n'
+                'Minta Admin Untuk Menambhakan Anda sebagai User\n'
                 'Tidak memerlukan konfigurasi URL API.',
                 style: TextStyle(
                   fontSize: 14,

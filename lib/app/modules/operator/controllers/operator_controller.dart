@@ -12,10 +12,24 @@ import 'package:inven/app/modules/login/controllers/login_controller.dart';
 import 'package:inven/app/modules/login/views/login_view.dart';
 
 class OperatorController extends GetxController {
-  final userCtrl = Get.find<GlobalUserController>();
+  late final GlobalUserController userCtrl;
   final services = StaticServicesGet();
 
   AppUser? get userData => userCtrl.user.value;
+
+  @override
+  void onInit() {
+    // Safely get GlobalUserController
+    try {
+      userCtrl = Get.find<GlobalUserController>();
+    } catch (e) {
+      // If not found, create a new one
+      userCtrl = Get.put(GlobalUserController());
+    }
+    
+    super.onInit();
+    fetchData();
+  }
 
   final expandP = ''.obs; //expand proses
   final expandR = ''.obs; //expand riwayat
@@ -45,11 +59,7 @@ class OperatorController extends GetxController {
   };
   var selectOpsi = 0.obs;
 
-  @override
-  void onInit() {
-    fetchData();
-    super.onInit();
-  }
+
 
   void filterChips() {
     int select = selectOpsi.value;

@@ -8,6 +8,8 @@ class AppAlat {
   final String? urlGambar;
   final DateTime? dibuatPada;
   final int stok;
+  final String? kodeAlat;
+  final String status; // 'tersedia', 'dipinjam', 'tidak_layak'
   
   // Relation
   final AppKategori? kategori;
@@ -20,6 +22,8 @@ class AppAlat {
     this.urlGambar,
     this.dibuatPada,
     required this.stok,
+    this.kodeAlat,
+    this.status = 'tersedia',
     this.kategori,
   });
 
@@ -32,6 +36,8 @@ class AppAlat {
       'url_gambar': urlGambar,
       'dibuat_pada': dibuatPada?.toIso8601String(),
       'stok': stok,
+      'kode_alat': kodeAlat,
+      'status': status,
     };
   }
 
@@ -48,6 +54,8 @@ class AppAlat {
           ? DateTime.parse(json['dibuat_pada'])
           : null,
       stok: int.tryParse(json['stok'].toString()) ?? 1,
+      kodeAlat: json['kode_alat'],
+      status: json['status'] ?? 'tersedia',
       kategori: json['kategori'] != null
           ? AppKategori.fromJson(json['kategori'])
           : null,

@@ -14,9 +14,16 @@ class GlobalUserController extends GetxController {
   void logout() async {
     user.value = null;
     
-    final login = Get.find<LoginController>();
-    login.clearForm();
+    // Clear login form if controller exists
+    try {
+      final login = Get.find<LoginController>();
+      login.clearForm();
+    } catch (e) {
+      // LoginController not found, ignore
+      print('LoginController not found: $e');
+    }
 
-    Get.offAll(() => LoginView(), binding: InitialBinding());
+    Get.offAll(() => LoginView(), );
+    // Get.offAll(() => LoginView(), binding: InitialBinding());
   }
 }

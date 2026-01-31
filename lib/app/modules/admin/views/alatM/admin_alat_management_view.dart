@@ -26,19 +26,32 @@ class AdminAlatManagementView extends StatelessWidget {
           ),
         ),
         
-        // Search bar
+        // Search bar and Add button row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: CustomTxtForm(
-            Label: 'Cari alat',
-            Controller: controller.searchController,
-            Focus: FocusNode(),
-            OnSubmit: (val) {
-              controller.onSearchChanged(val!);
-            },
-            OnChange: (val) {
-              controller.onSearchChanged(val!);
-            },
+          child: Row(
+            children: [
+              Expanded(
+                child: CustomTxtForm(
+                  Label: 'Cari alat',
+                  Controller: controller.searchController,
+                  Focus: FocusNode(),
+                  OnSubmit: (val) {
+                    controller.onSearchChanged(val!);
+                  },
+                  OnChange: (val) {
+                    controller.onSearchChanged(val!);
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Add Alat Button
+              FloatingActionButton.small(
+                heroTag: "btn_add_alat",
+                onPressed: () => _showAddAlatDialog(context),
+                child: const Icon(Icons.add),
+              ),
+            ],
           ),
         ),
 
@@ -52,44 +65,35 @@ class AdminAlatManagementView extends StatelessWidget {
             children: [
               // Category filter chips
               Expanded(
-                child: Obx(() {
-                  return Wrap(
-                    spacing: 8,
-                    children: [
-                      // "Semua" filter
-                      FilterChip(
-                        label: const Text('Semua', style: TextStyle(color: Colors.white, fontSize: 12)),
-                        selected: controller.selectedKategoriFilter.value == 0,
-                        selectedColor: Colors.black,
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: const BorderSide(color: Colors.black, width: 1),
-                        ),
-                        onSelected: (selected) {
-                          controller.onKategoriFilterChanged(selected ? 0 : controller.selectedKategoriFilter.value);
-                        },
-                      ),
-                      // Category filters
-                      ...controller.kategoriOptions.map((kategori) => 
-                        FilterChip(
-                          label: Text(kategori.nama, style: const TextStyle(color: Colors.white, fontSize: 12)),
-                          selected: controller.selectedKategoriFilter.value == kategori.id,
-                          selectedColor: Colors.black,
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(color: Colors.black, width: 1),
-                          ),
-                          onSelected: (selected) {
-                            controller.onKategoriFilterChanged(selected ? kategori.id : 0);
-                          },
-                        )
-                      ).toList(),
-                    ],
-                  );
-                }),
-              ),
+  child: Obx(() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+
+          /// === SEMUA ===
+          _buildKategoriChip(
+            label: "Semua",
+            id: 0,
+            selectedId: controller.selectedKategoriFilter.value,
+            onTap: controller.onKategoriFilterChanged,
+          ),
+
+          /// === DATA DARI KATEGORI ===
+          ...controller.kategoriOptions.map((kategori) {
+            return _buildKategoriChip(
+              label: kategori.nama,
+              id: kategori.id,
+              selectedId: controller.selectedKategoriFilter.value,
+              onTap: controller.onKategoriFilterChanged,
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }),
+),
+
               
               // Refresh button
               IconButton(
@@ -113,6 +117,44 @@ class AdminAlatManagementView extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
+              if (controller.filteredAlatList.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inventory_2,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Belum ada data alat',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tekan tombol + untuk menambah alat baru',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddAlatDialog(context),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Tambah Alat Pertama'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               return ListView.separated(
                 padding: const EdgeInsets.all(0),
                 shrinkWrap: true,
@@ -132,6 +174,177 @@ class AdminAlatManagementView extends StatelessWidget {
         ),
       
       ],
+    );
+  }
+
+  Widget _buildKategoriChip({
+  required String label,
+  required int id,
+  required int selectedId,
+  required Function(int) onTap,
+}) {
+  bool isActive = id == selectedId;
+
+  return Padding(
+    padding: const EdgeInsets.only(right: 8),
+    child: GestureDetector(
+      onTap: () => onTap(id),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.grey[900] : Colors.white,
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : Colors.grey[900],
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+  void _showAddAlatDialog(BuildContext context) {
+    final namaController = TextEditingController();
+    final stokController = TextEditingController(text: '1');
+    final urlGambarController = TextEditingController();
+    
+    String selectedKondisi = 'baik';
+    int selectedKategoriId = 0;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tambah Alat Baru'),
+        content: SizedBox(
+          width: 300,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: namaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama Alat *',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: stokController,
+                  decoration: const InputDecoration(
+                    labelText: 'Stok *',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: urlGambarController,
+                  decoration: const InputDecoration(
+                    labelText: 'URL Gambar (opsional)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Kondisi Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedKondisi,
+                  decoration: const InputDecoration(
+                    labelText: 'Kondisi *',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'baik', child: Text('Baik')),
+                    DropdownMenuItem(
+                      value: 'rusak_ringan',
+                      child: Text('Rusak Ringan'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'rusak_berat',
+                      child: Text('Rusak Berat'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      selectedKondisi = value;
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                // Kategori Dropdown
+                Obx(() {
+                  return DropdownButtonFormField<int>(
+                    value: selectedKategoriId == 0 ? null : selectedKategoriId,
+                    decoration: const InputDecoration(
+                      labelText: 'Kategori',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: 0,
+                        child: Text('Tidak ada kategori'),
+                      ),
+                      ...controller.kategoriOptions.map(
+                        (kategori) => DropdownMenuItem(
+                          value: kategori.id,
+                          child: Text('${kategori.kode} - ${kategori.nama}'),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        selectedKategoriId = value;
+                      }
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (namaController.text.trim().isEmpty) {
+                Get.snackbar(
+                  "Error",
+                  "Nama alat harus diisi",
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.red.shade50,
+                  colorText: Colors.red.shade900,
+                );
+                return;
+              }
+              
+              Navigator.pop(context);
+              await controller.addAlat(
+                nama: namaController.text.trim(),
+                kategoriId: selectedKategoriId == 0 ? null : selectedKategoriId,
+                kondisi: selectedKondisi,
+                urlGambar: urlGambarController.text.trim().isEmpty 
+                    ? null 
+                    : urlGambarController.text.trim(),
+                stok: int.tryParse(stokController.text) ?? 1,
+              );
+            },
+            child: const Text('Tambah'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/services/database_service_provider.dart';
@@ -13,12 +14,16 @@ class LoginController extends GetxController {
 
   final isPassHide = true.obs;
   var isLoading = false.obs;
+  
+  // Tambahkan variabel untuk error message
+  var errorMessage = ''.obs;
 
   void toglePass() => isPassHide.value = !isPassHide.value;
 
   void clearForm() {
     ctrlEmail.clear();
     ctrlPass.clear();
+    errorMessage.value = ''; // Reset error message
   }
 
   @override
@@ -31,13 +36,19 @@ class LoginController extends GetxController {
   }
 
   Future<void> login(GlobalKey<FormState> loginKey) async {
-    final userGlobal = Get.find<GlobalUserController>();
+    late final GlobalUserController userGlobal;
+    try {
+      userGlobal = Get.find<GlobalUserController>();
+    } catch (e) {
+      userGlobal = Get.put(GlobalUserController());
+    }
 
     if (isLoading.value) return;
     if (!(loginKey.currentState?.validate() ?? false)) return;
 
     try {
       isLoading.value = true;
+      errorMessage.value = ''; // Reset error
 
       final data = await DatabaseServiceProvider.login(
         ctrlEmail.text.trim(),
@@ -47,7 +58,17 @@ class LoginController extends GetxController {
       if (data != null) {
         userGlobal.setUser(data);
 
-        Get.snackbar('Sukses', 'Berhasil login');
+        // Tampilkan snackbar sukses yang lebih baik
+        Get.snackbar(
+          '✓ Berhasil',
+          'Selamat datang kembali!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(15),
+          borderRadius: 10,
+          duration: const Duration(seconds: 2),
+        );
 
         await Future.delayed(const Duration(milliseconds: 800));
 
@@ -62,13 +83,63 @@ class LoginController extends GetxController {
             Get.offAllNamed(Routes.BORROWER);
             break;
           default:
-            Get.snackbar('Error', 'Role tidak dikenali');
+            Get.snackbar(
+              '⚠ Peringatan',
+              'Role tidak dikenali',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.orange,
+              colorText: Colors.white,
+            );
         }
       } else {
-        Get.snackbar('Error', 'Email atau password salah');
+        // Error handling yang lebih baik untuk email/password salah
+        errorMessage.value = 'Email atau password salah';
+        
+        Get.snackbar(
+          '✗ Login Gagal',
+          'Email atau password yang Anda masukkan salah',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(15),
+          borderRadius: 10,
+          duration: const Duration(seconds: 3),
+          icon: const Icon(Icons.error_outline, color: Colors.white),
+        );
+        
+        // Clear password field
+        ctrlPass.clear();
+        // Request focus kembali ke password
+        Future.delayed(const Duration(milliseconds: 100), () {
+          fcsPass.requestFocus();
+        });
       }
     } catch (e) {
-      Get.snackbar('Error', 'Login gagal: ${e.toString()}');
+      // Error handling yang lebih spesifik
+      String errorMsg = 'Terjadi kesalahan, silakan coba lagi';
+      
+      if (e.toString().contains('timeout') || e.toString().contains('Timeout')) {
+        errorMsg = 'Koneksi timeout, periksa jaringan Anda';
+      } else if (e.toString().contains('network') || e.toString().contains('Network')) {
+        errorMsg = 'Tidak ada koneksi internet';
+      } else if (e.toString().contains('401') || e.toString().contains('unauthorized')) {
+        errorMsg = 'Autentikasi gagal';
+      }
+      
+      errorMessage.value = errorMsg;
+      
+      Get.snackbar(
+        '✗ Error',
+        errorMsg,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(15),
+        borderRadius: 10,
+        duration: const Duration(seconds: 4),
+        icon: const Icon(Icons.error_outline, color: Colors.white),
+        shouldIconPulse: true,
+      );
     } finally {
       isLoading.value = false;
     }

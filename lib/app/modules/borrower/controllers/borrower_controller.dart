@@ -16,7 +16,7 @@ import 'package:inven/app/modules/login/views/login_view.dart';
 
 class BorrowerController extends GetxController {
   //controller data pengguna
-  final userCtrl = Get.find<GlobalUserController>();
+  late final GlobalUserController userCtrl;
   AppUser? get userData => userCtrl.user.value;
 
   //services
@@ -71,6 +71,14 @@ class BorrowerController extends GetxController {
   //init awal app dimulai
   @override
   void onInit() {
+    // Safely get GlobalUserController
+    try {
+      userCtrl = Get.find<GlobalUserController>();
+    } catch (e) {
+      // If not found, create a new one
+      userCtrl = Get.put(GlobalUserController());
+    }
+    
     super.onInit();
 
     fetchData();
@@ -239,7 +247,7 @@ class BorrowerController extends GetxController {
 
   //melakukan pengajuan
   Future<void> pengajuan() async {
-    final user = Get.find<GlobalUserController>().user.value;
+    final user = userCtrl.user.value;
 
     try {
       isLoading.value = true;
