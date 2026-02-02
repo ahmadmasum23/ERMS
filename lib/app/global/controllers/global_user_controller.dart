@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:inven/app/data/models/AppUser.dart';
 import 'package:inven/app/data/models/ProfilPengguna.dart';
 import 'package:inven/app/global/bindings/InitialBinding.dart';
 import 'package:inven/app/modules/login/controllers/login_controller.dart';
@@ -6,6 +7,7 @@ import 'package:inven/app/modules/login/views/login_view.dart';
 
 class GlobalUserController extends GetxController {
   final user = Rxn<ProfilPengguna>();
+   var user2 = Rxn<AppUser>();
 
   void setUser(ProfilPengguna model) {
     user.value = model;

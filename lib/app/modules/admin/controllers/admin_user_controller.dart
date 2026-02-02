@@ -5,8 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/services/database_service_provider.dart';
 
 class AdminUserController extends GetxController {
-
-
   var users = <AppUser>[].obs;
   var isLoading = false.obs;
   var selectedRole = 'semua'.obs;
@@ -66,7 +64,7 @@ class AdminUserController extends GetxController {
       );
 
       await fetchUsers();
-      
+
       Get.snackbar(
         "✓ Berhasil",
         "User '$namaLengkap' berhasil ditambahkan",
@@ -75,7 +73,7 @@ class AdminUserController extends GetxController {
         colorText: Colors.green.shade900,
         duration: Duration(seconds: 3),
       );
-      
+
       return true;
     } catch (e) {
       Get.snackbar(
@@ -92,84 +90,85 @@ class AdminUserController extends GetxController {
     }
   }
 
- Future<bool> updateUser({
-  required String userId,
-  required String nama,
-  required String peran, 
-  required String alamat,
-  required String nomorHp,
-}) async {
-  try {
-    isLoading.value = true;
+  Future<bool> updateUser({
+    required String userId,
+    required String nama,
+    required String peran,
+    required String alamat,
+    required String nomorHp,
+  }) async {
+    try {
+      isLoading.value = true;
 
-    final updateData = {
-      'nama_lengkap': nama,
-      'peran': peran, 
-      'alamat': alamat,
-      'nomor_hp': nomorHp,
-    };
+      final updateData = {
+        'nama_lengkap': nama,
+        'peran': peran,
+        'alamat': alamat,
+        'nomor_hp': nomorHp,
+      };
 
-    await Supabase.instance.client
-        .from('profil_pengguna')
-        .update(updateData)
-        .eq('id', userId);
+      await Supabase.instance.client
+          .from('profil_pengguna')
+          .update(updateData)
+          .eq('id', userId);
 
-    await fetchUsers();
+      await fetchUsers();
 
-    Get.snackbar(
-      "✓ Berhasil",
-      "Data user berhasil diperbarui",
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade50,
-      colorText: Colors.green.shade900,
-    );
+      Get.snackbar(
+        "✓ Berhasil",
+        "Data user berhasil diperbarui",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade900,
+      );
 
-    return true;
-  } catch (e) {
-    print("ERROR UPDATE USER: $e");
-    Get.snackbar(
-      "✗ Gagal",
-      "Gagal memperbarui user",
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.shade50,
-      colorText: Colors.red.shade900,
-    );
-    return false;
-  } finally {
-    isLoading.value = false;
+      return true;
+    } catch (e) {
+      print("ERROR UPDATE USER: $e");
+      Get.snackbar(
+        "✗ Gagal",
+        "Gagal memperbarui user",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
   }
-}
 
   Future<bool> deleteUser(String userId) async {
     try {
       isLoading.value = true;
-      await Supabase.instance.client.auth.admin.deleteUser(userId);
+
       await Supabase.instance.client
-          .from('users')
+          .from('profil_pengguna')
           .delete()
           .eq('id', userId);
 
       await fetchUsers();
-      
+
       Get.snackbar(
         "✓ Berhasil",
         "User berhasil dihapus",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade900,
-        duration: Duration(seconds: 3),
       );
-      
+
       return true;
     } catch (e) {
+      print("ERROR DELETE USER: $e");
+
       Get.snackbar(
         "✗ Gagal",
-        "Gagal menghapus user. Coba lagi nanti.",
+        "Tidak bisa hapus user",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade900,
       );
-      print("ERROR DELETE USER: $e");
+
       return false;
     } finally {
       isLoading.value = false;

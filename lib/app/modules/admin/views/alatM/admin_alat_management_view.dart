@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/global/widgets/CustomTxtForm.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
 import 'package:inven/app/modules/admin/views/alatM/body_alatM_new.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 class AdminAlatManagementView extends StatelessWidget {
@@ -209,25 +209,76 @@ class AdminAlatManagementView extends StatelessWidget {
     final stokController = TextEditingController(text: '1');
     final kodeAlatController = TextEditingController();
 
-    File? selectedImage;
+    dynamic selectedImage; // Ganti dari File? ke dynamic
     final ImagePicker picker = ImagePicker();
 
     String selectedKondisi = 'baik';
     String selectedStatus = 'tersedia';
     int selectedKategoriId = 0;
 
+    Widget _buildImageWidget(dynamic file) {
+      if (kIsWeb) {
+        if (file is XFile) {
+          return FutureBuilder<Uint8List>(
+            future: file.readAsBytes(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data != null) {
+                return InteractiveViewer(
+                  // biar bisa zoom dikit kalau mau
+                  child: Image.memory(
+                    snapshot.data!,
+                    fit: BoxFit.contain, // 🔥 INI KUNCINYA
+                  ),
+                );
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          );
+        }
+      } else {
+        if (file is XFile) {
+          return FutureBuilder<Uint8List>(
+            future: file.readAsBytes(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data != null) {
+                return InteractiveViewer(
+                  child: Image.memory(
+                    snapshot.data!,
+                    fit: BoxFit.contain, // 🔥 INI JUGA
+                  ),
+                );
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          );
+        }
+      }
+
+      return const Center(child: Text("Gagal load gambar"));
+    }
+
     Future<void> pickImage(
       ImageSource source,
       StateSetter setStateDialog,
     ) async {
+      print('DEBUG: Picking image from source: $source');
+      print('DEBUG: Platform is web: $kIsWeb');
+
       final XFile? image = await picker.pickImage(
         source: source,
         imageQuality: 70,
       );
+
       if (image != null) {
+        print('DEBUG: Image picked successfully: ${image.name}');
         setStateDialog(() {
-          selectedImage = File(image.path);
+          selectedImage =
+              image; // Sekarang ini akan XFile baik di web maupun mobile
         });
+      } else {
+        print('DEBUG: No image selected');
       }
     }
 
@@ -295,10 +346,7 @@ class AdminAlatManagementView extends StatelessWidget {
                                 )
                               : ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    selectedImage!,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: _buildImageWidget(selectedImage!),
                                 ),
                         ),
                       ),

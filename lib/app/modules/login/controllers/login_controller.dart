@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+// import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/services/database_service_provider.dart';
 import 'package:inven/app/global/controllers/global_inven_controller.dart';
@@ -126,7 +126,7 @@ class LoginController extends GetxController {
       }
     } catch (e) {
       // Error handling yang lebih spesifik
-      String errorMsg = 'Terjadi kesalahan, silakan coba lagi';
+      String errorMsg = 'Terjadi kesalahan, Periksa kemabali email dan pasword anda pastikan sesuai dengan data anda';
       
       if (e.toString().contains('timeout') || e.toString().contains('Timeout')) {
         errorMsg = 'Koneksi timeout, periksa jaringan Anda';

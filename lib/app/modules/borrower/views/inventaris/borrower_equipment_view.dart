@@ -203,187 +203,158 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
       ],
     );
   }
-
   Widget _buildEquipmentCard(Alat equipment) {
   return Container(
-    padding: const EdgeInsets.all(10), // border luar
+    margin: const EdgeInsets.only(bottom: 16),
     decoration: BoxDecoration(
       color: Colors.white,
-      border: Border.all(color: Colors.grey.shade200), // border tipis
-      borderRadius: BorderRadius.circular(4), // kecil, biar kotak
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.06),
+          blurRadius: 6,
+          offset: const Offset(0, 1),
+        ),
+      ],
     ),
-    child: Container(
-      padding: const EdgeInsets.all(16), // padding dalam
-      decoration: BoxDecoration(
-        color: const Color(0xffF4F7F7), // background card
-        borderRadius: BorderRadius.circular(4), // kecil, biar kotak
-      ),
-      child: Column(
+    child: Padding(
+      padding: const EdgeInsets.all(14),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // HEADER
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      equipment.nama,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    if (equipment.kategori != null) ...[
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4), // kotak kecil
-                        ),
-                        child: Text(
-                          equipment.kategori!.nama,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              // Status badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: equipment.stok > 0
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4), // kotak kecil
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      equipment.stok > 0 ? Icons.check_circle : Icons.cancel,
-                      size: 16,
-                      color: equipment.stok > 0 ? Colors.green : Colors.red,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      equipment.stok > 0 ? 'Tersedia' : 'Habis',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: equipment.stok > 0 ? Colors.green : Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // CONTENT
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Stok
-              Row(
-                children: [
-                  const Icon(Icons.inventory, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Stok: ${equipment.stok}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (equipment.stok > 0)
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Get.snackbar(
-                          'Info',
-                          'Silakan ajukan peminjaman melalui menu Pengajuan',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      },
-                      icon: const Icon(Icons.shopping_bag, size: 16),
-                      label: const Text('Ajukan Pinjam'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4), // kotak kecil
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Kondisi
-              if (equipment.kondisi != null) ...[
-                const Divider(height: 1),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.build, size: 16, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Kondisi: ${equipment.kondisi}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ],
-
-              // Gambar
-              if (equipment.urlGambar != null && equipment.urlGambar!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                const Divider(height: 1),
-                const SizedBox(height: 12),
-                Container(
-                  height: 120,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4), // kotak kecil
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4), // kotak kecil
-                    child: Image.network(
+          // GAMBAR DI KIRI (mobile-friendly size)
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: (equipment.urlGambar != null && equipment.urlGambar!.isNotEmpty)
+                  ? Image.network(
                       equipment.urlGambar!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey.shade100,
                           child: const Center(
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey,
-                              size: 40,
-                            ),
+                            child: Icon(Icons.image_not_supported, color: Colors.grey, size: 32),
                           ),
                         );
                       },
+                    )
+                  : Container(
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: Icon(Icons.image, color: Colors.grey, size: 32),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 14),
+
+          // KONTEN KANAN
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // NAMA & KATEGORI
+                Text(
+                  equipment.nama,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                if (equipment.kategori != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      equipment.kategori!.nama,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue,
+                      ),
                     ),
                   ),
+
+                const SizedBox(height: 12),
+
+                // INFO DETAIL GRID 2 KOLOM (mobile-optimized)
+                _buildInfoGrid(equipment),
+
+                const SizedBox(height: 12),
+
+                // STATUS + TOMBOL (sejajar di mobile)
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: equipment.stok > 0
+                            ? Colors.green.withOpacity(0.12)
+                            : Colors.red.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            equipment.stok > 0 ? Icons.check_circle : Icons.cancel,
+                            size: 14,
+                            color: equipment.stok > 0 ? Colors.green : Colors.red,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            equipment.stok > 0 ? 'Tersedia' : 'Habis',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: equipment.stok > 0 ? Colors.green : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    if (equipment.stok > 0)
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Get.snackbar(
+                            'Info',
+                            'Silakan ajukan peminjaman melalui menu Pengajuan',
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        },
+                        icon: const Icon(Icons.shopping_bag, size: 16),
+                        label: const Text('Ajukan', style: TextStyle(fontSize: 13)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+                          minimumSize: const Size(0, 36),
+                        ),
+                      ),
+                  ],
                 ),
               ],
-            ],
+            ),
           ),
         ],
       ),
@@ -391,4 +362,92 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
   );
 }
 
+// GRID 2 KOLOM KHUSUS MOBILE
+Widget _buildInfoGrid(Alat equipment) {
+  return Column(
+    children: [
+      // Baris 1: Kode + Kategori
+      Row(
+        children: [
+          Expanded(child: _buildInfoBox('Kode', equipment.kodeAlat ?? 'N/A', Colors.grey)),
+          const SizedBox(width: 10),
+          Expanded(child: _buildInfoBox('Kategori', equipment.kategori?.nama ?? 'N/A', Colors.blue)),
+        ],
+      ),
+      const SizedBox(height: 10),
+      // Baris 2: Kondisi + Stok
+      Row(
+        children: [
+          Expanded(
+            child: _buildInfoBox(
+              'Kondisi',
+              _formatKondisi(equipment.kondisi),
+              equipment.kondisi == 'baik'
+                  ? Colors.green
+                  : (equipment.kondisi == 'rusak_ringan' ? Colors.orange : Colors.red),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _buildInfoBox(
+              'Stok',
+              '${equipment.stok}',
+              equipment.stok > 0 ? Colors.green : Colors.red,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+// WIDGET INFO BOX MOBILE (compact tapi jelas)
+Widget _buildInfoBox(String label, String value, Color color) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: color.withOpacity(0.25), width: 0.8),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    ),
+  );
+}
+
+// Helper format kondisi
+String _formatKondisi(String kondisi) {
+  switch (kondisi) {
+    case 'baik':
+      return 'Baik';
+    case 'rusak_ringan':
+      return 'Rsk Ringan';
+    case 'rusak_berat':
+      return 'Rsk Berat';
+    default:
+      return kondisi;
+  }
+}
 }

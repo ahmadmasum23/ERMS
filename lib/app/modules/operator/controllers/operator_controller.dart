@@ -8,6 +8,9 @@ import 'package:inven/app/data/services/peminjaman_service.dart';
 import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/modules/login/controllers/login_controller.dart';
 import 'package:inven/app/modules/login/views/login_view.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../data/models/AppUser.dart';
+import '../../../data/services/database_service_provider.dart';
 
 class OperatorController extends GetxController {
   late final GlobalUserController userCtrl;
@@ -34,7 +37,33 @@ class OperatorController extends GetxController {
     }
                 
     super.onInit();
+    fetchUserProfile();
     fetchData();
+  }
+  Future<void> fetchUserProfile() async {
+    try {
+      final userId = userCtrl.user.value?.id ?? DatabaseServiceProvider.currentUserId;
+      if (userId == null) return;
+
+      final response = await Supabase.instance.client
+          .from('vw_user_with_email')
+          .select()
+          .eq('id', userId)
+          .single();
+
+      // Update user di GlobalUserController
+      userCtrl.user.value = ProfilPengguna.fromJson(response);
+      print("DEBUG: User Profile = ${userCtrl.user.value?.toJson()}");
+    } catch (e) {
+      print("ERROR FETCH USER PROFILE: $e");
+      Get.snackbar(
+        "Error",
+        "Gagal memuat data profil",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+      );
+    }
   }
 
   final expandP = ''.obs; //expand proses

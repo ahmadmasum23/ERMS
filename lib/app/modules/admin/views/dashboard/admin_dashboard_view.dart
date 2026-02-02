@@ -3,14 +3,16 @@ import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
 import 'package:inven/app/modules/admin/controllers/admin_kategori_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_user_controller.dart';
+import 'package:inven/app/modules/admin/views/userM/admin_user_management_view.dart';
 // Removed import to deleted admin_user_management_view.dart
 
 class AdminDashboardView extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
-  // Tambahkan controller
   final AdminAlatController alatController = Get.put(AdminAlatController());
   final AdminKategoriController kategoriController = Get.put(AdminKategoriController());
+    final AdminUserController userController = Get.put(AdminUserController());
 
   AdminDashboardView({Key? key, required this.scaffoldKey}) : super(key: key);
 
@@ -54,9 +56,9 @@ class AdminDashboardView extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _buildStatCard(
-                        icon: Icons.assignment_turned_in_outlined,
-                        title: 'Total Peminjaman',
-                        value: '0', // nanti bisa diambil dari tabel peminjaman,
+                        icon: Icons.people_outline,
+                        title: 'Total Users',
+                        value: userController.users.length.toString(), 
                         iconColor: Colors.black,
                       ),
                     ),

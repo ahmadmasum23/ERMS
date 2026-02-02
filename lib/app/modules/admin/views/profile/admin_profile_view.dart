@@ -1,4 +1,3 @@
-// admin_profile_view.dart (diperbarui)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
@@ -15,7 +14,7 @@ class AdminProfileView extends GetView<AdminController> {
       children: [
         CustomAppbar(
           title: 'Admin',
-          boldTitle: 'Profile',
+          boldTitle: controller.adminData?.namaLengkap ?? '',
           showNotif: false,
           leading: IconButton(
             icon: const Icon(Icons.menu),
@@ -25,136 +24,109 @@ class AdminProfileView extends GetView<AdminController> {
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.grey.shade200),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
+            child: Obx(() {
+              final admin = controller.adminData;
+              if (admin == null) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              return Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xffF4F7F7),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade200),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// HEADER
-                    Row(
-                      children: const [
-                        Icon(Icons.admin_panel_settings,
-                            size: 24, color: Colors.black),
-                        SizedBox(width: 12),
-                        Text(
-                          'Account Information',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// CONTENT
-                    Column(
-                      children: [
-                        _infoRow('Role', 'Administrator'),
-                        const Divider(height: 24),
-                        _infoRow('Access Level', 'Full Access'),
-                        const Divider(height: 24),
-                        _infoRow('System Version', 'v1.0.0'),
-                        const Divider(height: 24),
-                        _infoRow('Last Login', 'Today'),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// ACTION BUTTONS
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Get.snackbar(
-                                'Edit Profile',
-                                'Edit profile feature coming soon',
-                              );
-                            },
-                            icon: const Icon(Icons.edit, size: 20),
-                            label: const Text('Edit Profile'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.black,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                side: const BorderSide(color: Colors.black),
-                              ),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffF4F7F7),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// HEADER
+                      Row(
+                        children: const [
+                          Icon(Icons.admin_panel_settings,
+                              size: 24, color: Colors.black),
+                          SizedBox(width: 12),
+                          Text(
+                            'Account Information',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Get.dialog(
-                                AlertDialog(
-                                  title: const Text(
-                                    'Logout?',
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                  content: const Text(
-                                    'Apakah kamu yakin ingin keluar?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: Get.back,
-                                      child: const Text(
-                                        'Batal',
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Get.back();
-                                        controller.doLogout();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.black,
-                                      ),
-                                      child: const Text(
-                                        'Logout',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      /// CONTENT
+                      _infoRow('Full Name', admin.namaLengkap),
+                      const Divider(height: 24),
+                      _infoRow('Alamat', admin.alamat ?? '-'),
+                      const Divider(height: 24),
+                      _infoRow('Nomor HP', admin.nomorHp ?? '-'),
+                      const Divider(height: 24),
+                      _infoRow('Role', 'Administrator'),
+                      const Divider(height: 24),
+                      _infoRow('Access Level', 'Full Access'),
+
+                      const SizedBox(height: 24),
+
+                      /// ACTION BUTTONS
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Get.snackbar(
+                                  'Edit Profile',
+                                  'Fitur edit profile segera hadir',
+                                );
+                              },
+                              icon: const Icon(Icons.edit, size: 20),
+                              label: const Text('Edit Profile'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                  side: const BorderSide(color: Colors.black),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.logout, size: 20),
-                            label: const Text('Logout'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: controller.doLogout,
+                              icon: const Icon(Icons.logout, size: 20),
+                              label: const Text('Logout'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
           ),
         ),
       ],
@@ -165,10 +137,7 @@ class AdminProfileView extends GetView<AdminController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 16, color: Colors.grey),
-        ),
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.grey)),
         Flexible(
           child: Text(
             value,

@@ -45,9 +45,10 @@ class StaticServicesGet {
       // Return empty list if there's a permission error
       if (e.toString().contains('permission denied')) {
         print('DEBUG: Permission denied - returning empty list');
-        Get.snackbar('Info', 'Tidak ada data peminjaman ditemukan');
+        // Get.snackbar('Info', 'Tidak dapat mengakses data peminjaman karena izin terbatas');
+        return [];
       }
-      return [];
+      rethrow; // Rethrow other errors
     }
   }
 
@@ -76,9 +77,10 @@ class StaticServicesGet {
       // Return empty list if there's a permission error
       if (e.toString().contains('permission denied')) {
         print('DEBUG: Permission denied - returning empty list');
-        Get.snackbar('Info', 'Tidak ada riwayat ditemukan');
+        // Get.snackbar('Info', 'Tidak dapat mengakses riwayat karena izin terbatas');
+        return [];
       }
-      return [];
+      rethrow; // Rethrow other errors
     }
   }
 
@@ -644,6 +646,162 @@ class BorrowerController extends GetxController {
     } catch (e) {
       print('ERROR getting local pengajuan: $e');
       return [];
+    }
+  }
+
+  // Fungsi untuk menyinkronkan pengajuan offline ke server
+  Future<void> syncOfflinePengajuan() async {
+    try {
+      final localPengajuan = await getLocalPengajuan();
+      
+      if (localPengajuan.isEmpty) {
+        print('DEBUG: Tidak ada pengajuan offline untuk disinkronkan');
+        Get.snackbar(
+          'Info',
+          'Tidak ada pengajuan offline untuk disinkronkan',
+          backgroundColor: Colors.blue,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      
+      print('DEBUG: Menemukan ${localPengajuan.length} pengajuan offline untuk disinkronkan');
+      
+      // Buat copy dari list untuk iterasi
+      final pengajuanCopy = List<Map<String, dynamic>>.from(localPengajuan);
+      int successCount = 0;
+      
+      for (int i = 0; i < pengajuanCopy.length; i++) {
+        final pengajuan = pengajuanCopy[i];
+        
+        try {
+          // Buat pengajuan baru ke server
+          final user = userCtrl.user.value;
+          
+          // Gunakan data dari pengajuan offline
+          final peminjaman = await servPst.createPeminjaman(
+            peminjamId: pengajuan['userId'],
+            tanggalPinjam: DateTime.parse(pengajuan['borrowDate']),
+            tanggalJatuhTempo: DateTime.parse(pengajuan['returnDate']),
+            status: 'menunggu',
+            alasan: pengajuan['reason'],
+          );
+
+          // Buat detail peminjaman untuk setiap alat
+          final List<int> equipmentIds = List<int>.from(pengajuan['equipmentIds']);
+          final List<Future<DetailPeminjaman>> detailFutures = [];
+          
+          for (int equipmentId in equipmentIds) {
+            final alat = itemList.firstWhere((item) => item.id == equipmentId, orElse: () => itemList.first);
+            
+            detailFutures.add(
+              servPst.createDetailPeminjaman(
+                peminjamanId: peminjaman.id,
+                alatId: alat.id,
+                kondisiSaatPinjam: alat.kondisi,
+              )
+            );
+          }
+
+          // Tunggu semua detail dibuat
+          await Future.wait(detailFutures);
+          
+          // Update status alat
+          for (int equipmentId in equipmentIds) {
+            final alat = itemList.firstWhere((item) => item.id == equipmentId, orElse: () => itemList.first);
+            await _alatService.updateAlat(id: alat.id, status: 'dipinjam');
+          }
+
+          print('DEBUG: Berhasil sinkronisasi pengajuan offline ${i + 1}');
+          successCount++;
+          
+          // Hapus dari offline storage
+          await deleteLocalPengajuanByData(pengajuan);
+          
+        } catch (e) {
+          print('ERROR sync pengajuan offline ${i + 1}: $e');
+          // Jika gagal karena permission, lanjutkan ke berikutnya
+          if (e.toString().contains('permission denied')) {
+            continue; // Coba pengajuan berikutnya
+          } else {
+            // Untuk error lainnya, mungkin berhenti atau lanjutkan tergantung kebijakan
+            continue; // Tetap lanjutkan
+          }
+        }
+      }
+      
+      if (successCount > 0) {
+        Get.snackbar(
+          'Sync Berhasil',
+          '$successCount dari ${pengajuanCopy.length} pengajuan offline berhasil disinkronkan',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        Get.snackbar(
+          'Sync Selesai',
+          'Tidak ada pengajuan offline yang berhasil disinkronkan',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+      
+    } catch (e) {
+      print('ERROR syncOfflinePengajuan: $e');
+      Get.snackbar(
+        'Sync Gagal',
+        'Gagal menyinkronkan pengajuan offline: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  // Fungsi untuk menghapus pengajuan lokal berdasarkan data
+  Future<void> deleteLocalPengajuanByData(Map<String, dynamic> pengajuanData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedData = prefs.getStringList('pending_loan_requests') ?? [];
+      
+      // Cari dan hapus entry yang cocok dengan data pengajuan
+      final jsonString = jsonEncode(pengajuanData);
+      savedData.remove(jsonString);
+      
+      await prefs.setStringList('pending_loan_requests', savedData);
+      print('DEBUG: Pengajuan lokal dihapus');
+    } catch (e) {
+      print('ERROR deleting local pengajuan: $e');
+    }
+  }
+
+  // Fungsi untuk menghapus pengajuan lokal berdasarkan index
+  Future<void> deleteLocalPengajuan(int index) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedData = prefs.getStringList('pending_loan_requests') ?? [];
+      
+      if (index >= 0 && index < savedData.length) {
+        savedData.removeAt(index);
+        await prefs.setStringList('pending_loan_requests', savedData);
+        print('DEBUG: Pengajuan lokal dihapus');
+      }
+    } catch (e) {
+      print('ERROR deleting local pengajuan: $e');
+    }
+  }
+
+  // Fungsi untuk membersihkan semua pengajuan offline
+  Future<void> clearAllLocalPengajuan() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('pending_loan_requests');
+      print('DEBUG: Semua pengajuan offline dihapus');
+    } catch (e) {
+      print('ERROR clearing all local pengajuan: $e');
     }
   }
 }

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomBtnForm.dart';
 import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
 import 'dialog_barang.dart';
-import 'dialog_instansi.dart';
 import 'dialog_keperluan.dart';
 import 'dialog_pemohon.dart';
 import 'dialog_tanggal.dart';
@@ -75,10 +74,6 @@ class ConfirmDialog extends GetView<BorrowerController> {
             Row(
               children: [
                 Expanded(child: DialogPemohon()),
-
-                const SizedBox(width: 10),
-
-                Expanded(child: DialogInstansi()),
               ],
             ),
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:inven/app/data/services/peminjaman_service.dart';
+import 'package:inven/app/data/services/alat_service.dart';
 import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
 
 class OfflinePengajuanView extends GetView<BorrowerController> {
@@ -12,6 +14,15 @@ class OfflinePengajuanView extends GetView<BorrowerController> {
         title: const Text('Pengajuan Offline'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync),
+            onPressed: () {
+              controller.syncOfflinePengajuan();
+            },
+            tooltip: 'Sinkronkan pengajuan offline',
+          ),
+        ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: controller.getLocalPengajuan(),
@@ -206,7 +217,7 @@ class OfflinePengajuanView extends GetView<BorrowerController> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                _deletePengajuan(index);
+                                _deletePengajuan(pengajuan);
                               },
                               icon: const Icon(Icons.delete, size: 16),
                               label: const Text('Hapus'),
@@ -328,7 +339,7 @@ class OfflinePengajuanView extends GetView<BorrowerController> {
     }
   }
 
-  void _deletePengajuan(int index) {
+  void _deletePengajuan(Map<String, dynamic> pengajuanData) {
     Get.defaultDialog(
       title: 'Hapus Pengajuan',
       middleText: 'Apakah Anda yakin ingin menghapus pengajuan offline ini?',
@@ -338,23 +349,89 @@ class OfflinePengajuanView extends GetView<BorrowerController> {
       buttonColor: Colors.red,
       onConfirm: () async {
         Get.back();
-        // Implement delete logic here
+        // Hapus pengajuan dari storage
+        await controller.deleteLocalPengajuanByData(pengajuanData);
+        
         Get.snackbar(
           'Dihapus',
           'Pengajuan berhasil dihapus',
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+        
+        // Refresh halaman
+        Get.back(); // Tutup dialog
+        Get.to(() => const OfflinePengajuanView()); // Refresh halaman
       },
     );
   }
 
   void _retryPengajuan(Map<String, dynamic> pengajuan) {
-    Get.snackbar(
-      'Info',
-      'Fitur retry akan diimplementasi dalam versi berikutnya',
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
+    Get.defaultDialog(
+      title: 'Coba Kirim Ulang',
+      middleText: 'Apakah Anda ingin mencoba mengirimkan pengajuan ini kembali?',
+      textConfirm: 'Kirim',
+      textCancel: 'Batal',
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.blue,
+      onConfirm: () async {
+        Get.back();
+        try {
+          // Coba kirim pengajuan kembali
+          final user = Get.find<BorrowerController>().userCtrl.user.value;
+          
+          if (user != null) {
+            final peminjamanService = PeminjamanService();
+            
+            // Buat pengajuan baru ke server
+            final peminjaman = await peminjamanService.createPeminjaman(
+              peminjamId: pengajuan['userId'],
+              tanggalPinjam: DateTime.parse(pengajuan['borrowDate']),
+              tanggalJatuhTempo: DateTime.parse(pengajuan['returnDate']),
+              status: 'menunggu',
+              alasan: pengajuan['reason'],
+            );
+
+            // Buat detail peminjaman untuk setiap alat
+            final List<int> equipmentIds = List<int>.from(pengajuan['equipmentIds']);
+            final alatService = AlatService();
+            
+            for (int equipmentId in equipmentIds) {
+              await peminjamanService.createDetailPeminjaman(
+                peminjamanId: peminjaman.id,
+                alatId: equipmentId,
+                kondisiSaatPinjam: 'baik', // Gunakan kondisi default
+              );
+              
+              // Update status alat
+              await alatService.updateAlat(id: equipmentId, status: 'dipinjam');
+            }
+
+            // Hapus dari offline storage
+            await Get.find<BorrowerController>().deleteLocalPengajuanByData(pengajuan);
+            
+            Get.snackbar(
+              'Berhasil',
+              'Pengajuan berhasil dikirim',
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+            
+            // Refresh halaman
+            Get.find<BorrowerController>().refresh();
+            Get.back(); // Tutup dialog
+            Get.back(); // Refresh halaman
+            Get.to(() => const OfflinePengajuanView());
+          }
+        } catch (e) {
+          Get.snackbar(
+            'Gagal',
+            'Gagal mengirim pengajuan: ${e.toString()}',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      },
     );
   }
 }
