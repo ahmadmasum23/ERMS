@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/global/widgets/CustomTxtForm.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
-
 import 'package:inven/app/modules/admin/views/alatM/body_alatM_new.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class AdminAlatManagementView extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
   final AdminAlatController controller = Get.put(AdminAlatController());
 
-  AdminAlatManagementView({Key? key, required this.scaffoldKey}) : super(key: key);
+  AdminAlatManagementView({Key? key, required this.scaffoldKey})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +28,7 @@ class AdminAlatManagementView extends StatelessWidget {
             onPressed: () => scaffoldKey.currentState?.openDrawer(),
           ),
         ),
-        
+
         // Search bar and Add button row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -48,8 +51,12 @@ class AdminAlatManagementView extends StatelessWidget {
               // Add Alat Button
               FloatingActionButton.small(
                 heroTag: "btn_add_alat",
+                backgroundColor: Colors.black,
                 onPressed: () => _showAddAlatDialog(context),
-                child: const Icon(Icons.add),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.add, color: Colors.white),
               ),
             ],
           ),
@@ -65,36 +72,34 @@ class AdminAlatManagementView extends StatelessWidget {
             children: [
               // Category filter chips
               Expanded(
-  child: Obx(() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
+                child: Obx(() {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        /// === SEMUA ===
+                        _buildKategoriChip(
+                          label: "Semua",
+                          id: 0,
+                          selectedId: controller.selectedKategoriFilter.value,
+                          onTap: controller.onKategoriFilterChanged,
+                        ),
 
-          /// === SEMUA ===
-          _buildKategoriChip(
-            label: "Semua",
-            id: 0,
-            selectedId: controller.selectedKategoriFilter.value,
-            onTap: controller.onKategoriFilterChanged,
-          ),
+                        /// === DATA DARI KATEGORI ===
+                        ...controller.kategoriOptions.map((kategori) {
+                          return _buildKategoriChip(
+                            label: kategori.nama,
+                            id: kategori.id,
+                            selectedId: controller.selectedKategoriFilter.value,
+                            onTap: controller.onKategoriFilterChanged,
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  );
+                }),
+              ),
 
-          /// === DATA DARI KATEGORI ===
-          ...controller.kategoriOptions.map((kategori) {
-            return _buildKategoriChip(
-              label: kategori.nama,
-              id: kategori.id,
-              selectedId: controller.selectedKategoriFilter.value,
-              onTap: controller.onKategoriFilterChanged,
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }),
-),
-
-              
               // Refresh button
               IconButton(
                 onPressed: () {
@@ -139,16 +144,7 @@ class AdminAlatManagementView extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Tekan tombol + untuk menambah alat baru',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => _showAddAlatDialog(context),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Tambah Alat Pertama'),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                       ),
                     ],
                   ),
@@ -172,178 +168,255 @@ class AdminAlatManagementView extends StatelessWidget {
             }),
           ),
         ),
-      
       ],
     );
   }
 
   Widget _buildKategoriChip({
-  required String label,
-  required int id,
-  required int selectedId,
-  required Function(int) onTap,
-}) {
-  bool isActive = id == selectedId;
+    required String label,
+    required int id,
+    required int selectedId,
+    required Function(int) onTap,
+  }) {
+    bool isActive = id == selectedId;
 
-  return Padding(
-    padding: const EdgeInsets.only(right: 8),
-    child: GestureDetector(
-      onTap: () => onTap(id),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.grey[900] : Colors.white,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey[900],
-            fontWeight: FontWeight.w500,
-            fontSize: 12,
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: () => onTap(id),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.grey[900] : Colors.white,
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isActive ? Colors.white : Colors.grey[900],
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showAddAlatDialog(BuildContext context) {
     final namaController = TextEditingController();
     final stokController = TextEditingController(text: '1');
-    final urlGambarController = TextEditingController();
-    
+    final kodeAlatController = TextEditingController();
+
+    File? selectedImage;
+    final ImagePicker picker = ImagePicker();
+
     String selectedKondisi = 'baik';
+    String selectedStatus = 'tersedia';
     int selectedKategoriId = 0;
-    
+
+    Future<void> pickImage(
+      ImageSource source,
+      StateSetter setStateDialog,
+    ) async {
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+      );
+      if (image != null) {
+        setStateDialog(() {
+          selectedImage = File(image.path);
+        });
+      }
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tambah Alat Baru'),
-        content: SizedBox(
-          width: 300,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: namaController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nama Alat *',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                TextField(
-                  controller: stokController,
-                  decoration: const InputDecoration(
-                    labelText: 'Stok *',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                
-                TextField(
-                  controller: urlGambarController,
-                  decoration: const InputDecoration(
-                    labelText: 'URL Gambar (opsional)',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Kondisi Dropdown
-                DropdownButtonFormField<String>(
-                  value: selectedKondisi,
-                  decoration: const InputDecoration(
-                    labelText: 'Kondisi *',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'baik', child: Text('Baik')),
-                    DropdownMenuItem(
-                      value: 'rusak_ringan',
-                      child: Text('Rusak Ringan'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'rusak_berat',
-                      child: Text('Rusak Berat'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      selectedKondisi = value;
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Kategori Dropdown
-                Obx(() {
-                  return DropdownButtonFormField<int>(
-                    value: selectedKategoriId == 0 ? null : selectedKategoriId,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          title: const Text('Tambah Alat Baru'),
+          content: SizedBox(
+            width: 300,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: namaController,
                     decoration: const InputDecoration(
-                      labelText: 'Kategori',
+                      labelText: 'Nama Alat *',
                       border: OutlineInputBorder(),
                     ),
-                    items: [
-                      const DropdownMenuItem(
-                        value: 0,
-                        child: Text('Tidak ada kategori'),
-                      ),
-                      ...controller.kategoriOptions.map(
-                        (kategori) => DropdownMenuItem(
-                          value: kategori.id,
-                          child: Text('${kategori.kode} - ${kategori.nama}'),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: kodeAlatController,
+                    decoration: const InputDecoration(
+                      labelText: 'Kode Alat (opsional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: stokController,
+                    decoration: const InputDecoration(
+                      labelText: 'Stok *',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  const SizedBox(height: 16),
+
+                  /// ===== FOTO ALAT =====
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Foto Alat"),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () =>
+                            pickImage(ImageSource.gallery, setStateDialog),
+                        child: Container(
+                          height: 120,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: selectedImage == null
+                              ? const Center(
+                                  child: Text(
+                                    "Tap untuk pilih gambar dari galeri",
+                                  ),
+                                )
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    selectedImage!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        selectedKategoriId = value;
-                      }
-                    },
-                  );
-                }),
-              ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
+                    value: selectedKondisi,
+                    decoration: const InputDecoration(
+                      labelText: 'Kondisi *',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'baik', child: Text('Baik')),
+                      DropdownMenuItem(
+                        value: 'rusak_ringan',
+                        child: Text('Rusak Ringan'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'rusak_berat',
+                        child: Text('Rusak Berat'),
+                      ),
+                    ],
+                    onChanged: (value) => selectedKondisi = value!,
+                  ),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
+                    value: selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Status *',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'tersedia',
+                        child: Text('Tersedia'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'dipinjam',
+                        child: Text('Dipinjam'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'tidak_layak',
+                        child: Text('Tidak Layak'),
+                      ),
+                    ],
+                    onChanged: (value) => selectedStatus = value!,
+                  ),
+                  const SizedBox(height: 16),
+
+                  Obx(() {
+                    return DropdownButtonFormField<int>(
+                      value: selectedKategoriId == 0
+                          ? null
+                          : selectedKategoriId,
+                      decoration: const InputDecoration(
+                        labelText: 'Kategori',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        const DropdownMenuItem(
+                          value: 0,
+                          child: Text('Tidak ada kategori'),
+                        ),
+                        ...controller.kategoriOptions.map(
+                          (k) => DropdownMenuItem(
+                            value: k.id,
+                            child: Text('${k.kode} - ${k.nama}'),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) => selectedKategoriId = value ?? 0,
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (namaController.text.trim().isEmpty) {
-                Get.snackbar(
-                  "Error",
-                  "Nama alat harus diisi",
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.red.shade50,
-                  colorText: Colors.red.shade900,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (namaController.text.trim().isEmpty) {
+                  Get.snackbar("Error", "Nama alat harus diisi");
+                  return;
+                }
+
+                final stokValue = int.tryParse(stokController.text);
+                if (stokValue == null || stokValue <= 0) {
+                  Get.snackbar("Error", "Stok harus angka positif");
+                  return;
+                }
+
+                Navigator.pop(context);
+
+                await controller.addAlat(
+                  nama: namaController.text.trim(),
+                  kategoriId: selectedKategoriId == 0
+                      ? null
+                      : selectedKategoriId,
+                  kondisi: selectedKondisi,
+                  stok: stokValue,
+                  kodeAlat: kodeAlatController.text.trim().isEmpty
+                      ? null
+                      : kodeAlatController.text.trim(),
+                  status: selectedStatus,
+                  imageFile: selectedImage, // ⬅ kirim file, bukan URL
                 );
-                return;
-              }
-              
-              Navigator.pop(context);
-              await controller.addAlat(
-                nama: namaController.text.trim(),
-                kategoriId: selectedKategoriId == 0 ? null : selectedKategoriId,
-                kondisi: selectedKondisi,
-                urlGambar: urlGambarController.text.trim().isEmpty 
-                    ? null 
-                    : urlGambarController.text.trim(),
-                stok: int.tryParse(stokController.text) ?? 1,
-              );
-            },
-            child: const Text('Tambah'),
-          ),
-        ],
+              },
+              child: const Text('Tambah'),
+            ),
+          ],
+        ),
       ),
     );
   }

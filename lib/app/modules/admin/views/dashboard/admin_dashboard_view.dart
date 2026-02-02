@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
+import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_kategori_controller.dart';
+import 'package:inven/app/modules/admin/controllers/admin_user_controller.dart';
 
 class AdminDashboardView extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
 
-  const AdminDashboardView({Key? key, required this.scaffoldKey}) : super(key: key);
+  // Tambahkan controller
+  final AdminUserController userController = Get.put(AdminUserController());
+  final AdminAlatController alatController = Get.put(AdminAlatController());
+  final AdminKategoriController kategoriController = Get.put(AdminKategoriController());
+
+  AdminDashboardView({Key? key, required this.scaffoldKey}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +34,6 @@ class AdminDashboardView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Dashboard Overview
                 Text(
                   'Dashboard Overview',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -42,14 +50,14 @@ class AdminDashboardView extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Statistik Utama (2x2 grid)
-                Row(
+                // Statistik Utama
+                Obx(() => Row(
                   children: [
                     Expanded(
                       child: _buildStatCard(
                         icon: Icons.people_outline,
                         title: 'Total Users',
-                        value: '5',
+                        value: userController.users.length.toString(),
                         iconColor: Colors.black,
                       ),
                     ),
@@ -58,34 +66,34 @@ class AdminDashboardView extends StatelessWidget {
                       child: _buildStatCard(
                         icon: Icons.build_outlined,
                         title: 'Total Alat',
-                        value: '39',
+                        value: alatController.getTotalAlatCount().toString(),
                         iconColor: Colors.black,
                       ),
                     ),
                   ],
-                ),
+                )),
                 const SizedBox(height: 12),
-                Row(
+                Obx(() => Row(
                   children: [
                     Expanded(
                       child: _buildStatCard(
-                        icon: Icons.assignment_turned_in_outlined,
-                        title: 'Total Peminjaman',
-                        value: '5',
+                        icon: Icons.category_outlined,
+                        title: 'Jumlah Kategori Alat',
+                        value: kategoriController.kategoriList.length.toString(),
                         iconColor: Colors.black,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
-                        icon: Icons.warning_amber_outlined,
-                        title: 'Pending Approval',
-                        value: '2',
+                        icon: Icons.assignment_turned_in_outlined,
+                        title: 'Total Peminjaman',
+                        value: '0', // nanti bisa diambil dari tabel peminjaman
                         iconColor: Colors.black,
                       ),
                     ),
                   ],
-                ),
+                )),
                 const SizedBox(height: 24),
 
                 // Status Alat
@@ -96,13 +104,13 @@ class AdminDashboardView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
+                Obx(() => Row(
                   children: [
                     Expanded(
                       child: _buildStatCard(
                         icon: Icons.check_circle,
                         title: 'Alat Tersedia',
-                        value: '27',
+                        value: alatController.getBaikCount().toString(),
                         iconColor: Colors.black,
                       ),
                     ),
@@ -111,31 +119,12 @@ class AdminDashboardView extends StatelessWidget {
                       child: _buildStatCard(
                         icon: Icons.trending_up,
                         title: 'Sedang Dipinjam',
-                        value: '2',
+                        value: '0', // nanti bisa diambil dari status peminjaman
                         iconColor: Colors.black,
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 24),
-
-                // Peminjaman Terbaru — sekarang setiap item jadi card terpisah
-                Text(
-                  'Peminjaman Terbaru',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildLoanItem('Budi Santoso', 'Laptop Asus ROG', 'Pending'),
-                const SizedBox(height: 8),
-                _buildLoanItem('Siti Nurhaliza', 'Proyektor Epson', 'Disetujui'),
-                const SizedBox(height: 8),
-                _buildLoanItem('Ahmad Dahlan', 'Bola Sepak', 'Dikembalikan'),
-                const SizedBox(height: 8),
-                _buildLoanItem('Budi Santoso', 'Kamera DSLR Canon', 'Terlambat'),
-                const SizedBox(height: 8),
-                _buildLoanItem('Siti Nurhaliza', 'Microphone Wireless', 'Pending'),
+                )),
               ],
             ),
           ),
@@ -143,6 +132,7 @@ class AdminDashboardView extends StatelessWidget {
       ],
     );
   }
+
 
   /// Card statistik utama — untuk angka
   Widget _buildStatCard({
@@ -180,59 +170,6 @@ class AdminDashboardView extends StatelessWidget {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Item daftar peminjaman — sekarang jadi card individual
-  Widget _buildLoanItem(String name, String item, String status) {
-    Color chipColor = Colors.grey;
-    if (status == 'Pending') chipColor = Colors.amber.shade50;
-    if (status == 'Disetujui') chipColor = Colors.green.shade100;
-    if (status == 'Dikembalikan') chipColor = Colors.blue.shade100;
-    if (status == 'Terlambat') chipColor = Colors.red.shade100;
-
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xffF4F7F7),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(
-                    item,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
-            Chip(
-              label: Text(
-                status,
-                style: const TextStyle(color: Colors.black, fontSize: 10),
-              ),
-              backgroundColor: chipColor,
-              side: BorderSide(color: chipColor),
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
               ),
             ),
           ],

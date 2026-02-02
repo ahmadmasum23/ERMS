@@ -16,12 +16,12 @@ class BorrowerEquipmentView extends StatefulWidget {
 class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
   final AlatService _alatService = AlatService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   var equipments = <AppAlat>[].obs;
   var filteredEquipments = <AppAlat>[].obs;
   var isLoading = false.obs;
   var selectedCategoryIndex = 0.obs; // Use int index instead of String
-  
+
   @override
   void initState() {
     super.initState();
@@ -67,25 +67,30 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
 
   void _applyFilters() {
     List<AppAlat> filtered = List.from(equipments);
-    
+
     // Apply search filter
     if (_searchController.text.isNotEmpty) {
       final searchTerm = _searchController.text.toLowerCase();
-      filtered = filtered.where((alat) => 
-        alat.nama.toLowerCase().contains(searchTerm) ||
-        (alat.kategori?.nama.toLowerCase().contains(searchTerm) ?? false)
-      ).toList();
+      filtered = filtered
+          .where(
+            (alat) =>
+                alat.nama.toLowerCase().contains(searchTerm) ||
+                (alat.kategori?.nama.toLowerCase().contains(searchTerm) ??
+                    false),
+          )
+          .toList();
     }
-    
+
     // Apply category filter
     final categories = _getUniqueCategories();
-    if (selectedCategoryIndex.value > 0 && selectedCategoryIndex.value < categories.length) {
+    if (selectedCategoryIndex.value > 0 &&
+        selectedCategoryIndex.value < categories.length) {
       final selectedCategoryName = categories[selectedCategoryIndex.value];
-      filtered = filtered.where((alat) => 
-        alat.kategori?.nama == selectedCategoryName
-      ).toList();
+      filtered = filtered
+          .where((alat) => alat.kategori?.nama == selectedCategoryName)
+          .toList();
     }
-    
+
     filteredEquipments.assignAll(filtered);
   }
 
@@ -93,12 +98,8 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CustomAppbar(
-          title: 'Daftar',
-          boldTitle: 'Peralatan',
-          showNotif: false,
-        ),
-        
+        CustomAppbar(title: 'Daftar', boldTitle: 'Peralatan', showNotif: false),
+
         // Search Bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -110,17 +111,17 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
             OnChange: (val) => _applyFilters(),
           ),
         ),
-        
+
         const SizedBox(height: 15),
-        
+
         // Category Filter
         Obx(() {
           final categories = _getUniqueCategories();
           final categoryMap = Map<int, String>.fromIterables(
             List<int>.generate(categories.length, (i) => i),
-            categories
+            categories,
           );
-          
+
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
@@ -145,16 +146,16 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
             ),
           );
         }),
-        
+
         const SizedBox(height: 15),
-        
+
         // Equipment List
         Expanded(
           child: Obx(() {
             if (isLoading.value) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (filteredEquipments.isEmpty) {
               return Center(
                 child: Column(
@@ -177,22 +178,24 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
                     const SizedBox(height: 8),
                     Text(
                       'Coba ubah kata kunci pencarian atau filter',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                     ),
                   ],
                 ),
               );
             }
-            
+
             return ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               itemCount: filteredEquipments.length,
               itemBuilder: (context, index) {
                 final equipment = filteredEquipments[index];
-                return _buildEquipmentCard(equipment);
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 12,
+                  ), // jarak antar card
+                  child: _buildEquipmentCard(equipment),
+                );
               },
             );
           }),
@@ -202,194 +205,190 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
   }
 
   Widget _buildEquipmentCard(AppAlat equipment) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+  return Container(
+    padding: const EdgeInsets.all(10), // border luar
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: Colors.grey.shade200), // border tipis
+      borderRadius: BorderRadius.circular(4), // kecil, biar kotak
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(16), // padding dalam
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: const Color(0xffF4F7F7), // background card
+        borderRadius: BorderRadius.circular(4), // kecil, biar kotak
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with name and status
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xffF4F7F7),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        equipment.nama,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (equipment.kategori != null) ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            equipment.kategori!.nama,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                // Status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: equipment.stok > 0 
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        equipment.stok > 0 ? Icons.check_circle : Icons.cancel,
-                        size: 16,
-                        color: equipment.stok > 0 ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        equipment.stok > 0 ? 'Tersedia' : 'Habis',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: equipment.stok > 0 ? Colors.green : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Equipment details
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Stock information
-                Row(
+          // HEADER
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.inventory, size: 16, color: Colors.grey),
-                    const SizedBox(width: 8),
                     Text(
-                      'Stok: ${equipment.stok}',
+                      equipment.nama,
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                    const Spacer(),
-                    if (equipment.stok > 0)
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          // Navigate to borrowing request
-                          Get.snackbar(
-                            'Info',
-                            'Silakan ajukan peminjaman melalui menu Pengajuan',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        },
-                        icon: const Icon(Icons.add_shopping_cart, size: 16),
-                        label: const Text('Ajukan Pinjam'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
+                    if (equipment.kategori != null) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4), // kotak kecil
+                        ),
+                        child: Text(
+                          equipment.kategori!.nama,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.blue,
+                          ),
                         ),
                       ),
+                    ],
                   ],
                 ),
-                
+              ),
+              // Status badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: equipment.stok > 0
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4), // kotak kecil
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      equipment.stok > 0 ? Icons.check_circle : Icons.cancel,
+                      size: 16,
+                      color: equipment.stok > 0 ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      equipment.stok > 0 ? 'Tersedia' : 'Habis',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: equipment.stok > 0 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // CONTENT
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Stok
+              Row(
+                children: [
+                  const Icon(Icons.inventory, size: 16, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Stok: ${equipment.stok}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (equipment.stok > 0)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Get.snackbar(
+                          'Info',
+                          'Silakan ajukan peminjaman melalui menu Pengajuan',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      },
+                      icon: const Icon(Icons.shopping_bag, size: 16),
+                      label: const Text('Ajukan Pinjam'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4), // kotak kecil
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Kondisi
+              if (equipment.kondisi != null) ...[
+                const Divider(height: 1),
                 const SizedBox(height: 12),
-                
-                // Condition
-                if (equipment.kondisi != null) ...[
-                  const Divider(height: 1),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(Icons.build, size: 16, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Kondisi: ${equipment.kondisi}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ],
-                
-                // Image if available
-                if (equipment.urlGambar != null && equipment.urlGambar!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  const Divider(height: 1),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 120,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade200),
+                Row(
+                  children: [
+                    const Icon(Icons.build, size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Kondisi: ${equipment.kondisi}',
+                      style: const TextStyle(fontSize: 14),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        equipment.urlGambar!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade100,
-                            child: const Center(
-                              child: Icon(
-                                Icons.image_not_supported,
-                                color: Colors.grey,
-                                size: 40,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ],
-            ),
+
+              // Gambar
+              if (equipment.urlGambar != null && equipment.urlGambar!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4), // kotak kecil
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4), // kotak kecil
+                    child: Image.network(
+                      equipment.urlGambar!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.shade100,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

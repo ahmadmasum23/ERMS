@@ -82,10 +82,74 @@ class AdminActivityLogView extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Filter row
-          Row(
+          LayoutBuilder(
+  builder: (context, constraints) {
+    final isMobile = constraints.maxWidth < 600;
+
+    return isMobile
+        // 📱 MODE HP → TUMPUK KE BAWAH
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'Action',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                ),
+                value: controller.selectedAction.value.isEmpty
+                    ? null
+                    : controller.selectedAction.value,
+                items: [
+                  const DropdownMenuItem(value: '', child: Text('All Actions')),
+                  ...controller.getUniqueActions().map((action) =>
+                      DropdownMenuItem(value: action, child: Text(action))),
+                ],
+                onChanged: controller.onActionFilterChanged,
+              ),
+              const SizedBox(height: 12),
+
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'Entity',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                ),
+                value: controller.selectedEntity.value.isEmpty
+                    ? null
+                    : controller.selectedEntity.value,
+                items: [
+                  const DropdownMenuItem(value: '', child: Text('All Entities')),
+                  ...controller.getUniqueEntities().map((entity) =>
+                      DropdownMenuItem(value: entity, child: Text(entity))),
+                ],
+                onChanged: controller.onEntityFilterChanged,
+              ),
+              const SizedBox(height: 12),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: controller.refreshLogs,
+                  tooltip: 'Refresh logs',
+                ),
+              ),
+            ],
+          )
+
+        // 🖥 TABLET / DESKTOP → SEJAJAR
+        : Row(
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: 'Action',
                     border: OutlineInputBorder(
@@ -93,13 +157,13 @@ class AdminActivityLogView extends StatelessWidget {
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   ),
-                  value: controller.selectedAction.value.isEmpty ? null : controller.selectedAction.value,
+                  value: controller.selectedAction.value.isEmpty
+                      ? null
+                      : controller.selectedAction.value,
                   items: [
                     const DropdownMenuItem(value: '', child: Text('All Actions')),
-                    ...controller.getUniqueActions().map((action) => DropdownMenuItem(
-                      value: action,
-                      child: Text(action),
-                    )).toList(),
+                    ...controller.getUniqueActions().map((action) =>
+                        DropdownMenuItem(value: action, child: Text(action))),
                   ],
                   onChanged: controller.onActionFilterChanged,
                 ),
@@ -107,6 +171,7 @@ class AdminActivityLogView extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   decoration: InputDecoration(
                     labelText: 'Entity',
                     border: OutlineInputBorder(
@@ -114,13 +179,13 @@ class AdminActivityLogView extends StatelessWidget {
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   ),
-                  value: controller.selectedEntity.value.isEmpty ? null : controller.selectedEntity.value,
+                  value: controller.selectedEntity.value.isEmpty
+                      ? null
+                      : controller.selectedEntity.value,
                   items: [
                     const DropdownMenuItem(value: '', child: Text('All Entities')),
-                    ...controller.getUniqueEntities().map((entity) => DropdownMenuItem(
-                      value: entity,
-                      child: Text(entity),
-                    )).toList(),
+                    ...controller.getUniqueEntities().map((entity) =>
+                        DropdownMenuItem(value: entity, child: Text(entity))),
                   ],
                   onChanged: controller.onEntityFilterChanged,
                 ),
@@ -132,7 +197,10 @@ class AdminActivityLogView extends StatelessWidget {
                 tooltip: 'Refresh logs',
               ),
             ],
+          );
+  },
           ),
+
         ],
       ),
     );

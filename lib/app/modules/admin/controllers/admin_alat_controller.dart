@@ -1,4 +1,6 @@
-  import 'package:flutter/material.dart';
+  import 'dart:io';
+
+import 'package:flutter/material.dart';
   import 'package:get/get.dart';
   import '../../../data/models/AppAlat.dart';
   import '../../../data/models/AppKategori.dart';
@@ -66,7 +68,7 @@
       String? urlGambar,
       int stok = 1,
       String? kodeAlat,
-      String status = 'tersedia',
+      String status = 'tersedia', File? imageFile,
     }) async {
       try {
         isLoading.value = true;

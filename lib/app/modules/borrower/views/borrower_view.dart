@@ -18,9 +18,8 @@ class BorrowerView extends GetView<BorrowerController> {
         body: IndexedStack(
           index: controller.isIndex.value,
           children: [
-
             BorrowerEquipmentView(),
-             
+
             BorrowerAjukanView(),
 
             BorrowerRiwayatView(), //masih dummy
@@ -44,7 +43,10 @@ class BorrowerView extends GetView<BorrowerController> {
             currentIndex: controller.isIndex.value,
             onTap: controller.onChangePage,
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.inventory), label: 'Inventaris'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.inventory),
+                label: 'Inventaris',
+              ),
 
               BottomNavigationBarItem(
                 icon: Icon(Icons.add_box),

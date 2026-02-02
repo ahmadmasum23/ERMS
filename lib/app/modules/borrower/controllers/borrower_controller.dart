@@ -39,6 +39,7 @@ class BorrowerController extends GetxController {
   final expandP = ''.obs;
 
   var isIndex = 0.obs; //index navigasi
+  
 
   //komponen untuk filteChips
   final Map<int, String> opsFltr = {

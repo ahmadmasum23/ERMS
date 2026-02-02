@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart'; // Tambahkan import ini
 import 'package:inven/app/data/models/AppAlat.dart';
 import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
@@ -41,10 +42,10 @@ class DataAlatNew extends StatelessWidget {
       statusColor = Colors.red;
     }
 
-    // Format date
+    // Format date dengan intl package
     String tanggalText = 'Belum ada tanggal';
     if (dibuatPada != null) {
-      tanggalText = '${dibuatPada.day}/${dibuatPada.month}/${dibuatPada.year}';
+      tanggalText = DateFormat('dd/MM/yyyy HH:mm').format(dibuatPada);
     }
 
     // Debug information
@@ -62,112 +63,237 @@ class DataAlatNew extends StatelessWidget {
     print('====================');
 
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey[200]!,
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product Header with Medium Image
-          Container(
-            height: 120,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Container(
+        // === CONTAINER LUAR: PUTIH DENGAN BORDER ===
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey[200]!,
+              blurRadius: 3,
+              offset: const Offset(0, 1),
             ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: _buildMediumImageWidget(urlGambar),
-            ),
+          ],
+        ),
+        child: Container(
+          // === CONTAINER DALAM: BACKGROUND LEMBUT ===
+          decoration: BoxDecoration(
+            color: const Color(0xffF9FAFB), // Warna lembut seperti contoh
+            borderRadius: BorderRadius.circular(
+              7,
+            ), // Sedikit lebih kecil dari luar
           ),
-
-          // Product Information Section
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product Name
-                Text(
-                  nama,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Header with Medium Image
+              Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(7),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
-
-                // Product Details Row
-                _buildCompactProductDetailsRow(
-                  kodeKategori,
-                  kategori,
-                  kondisiText,
-                  stok,
-                ),
-
-                const SizedBox(height: 12),
-
-                // Status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: statusColor.withOpacity(0.3)),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(7),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        status == 'tersedia' 
-                          ? Icons.check_circle
-                          : status == 'dipinjam' 
-                            ? Icons.access_time
-                            : Icons.cancel,
-                        size: 14,
-                        color: statusColor,
+                  child: _buildMediumImageWidget(urlGambar),
+                ),
+              ),
+
+              // Product Information Section (dengan padding disesuaikan)
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Product Name
+                    Text(
+                      nama,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        statusText,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Kode Alat Badge
+                    if (kodeAlat != 'N/A') ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue[300]!),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.qr_code_2,
+                              size: 16,
+                              color: Colors.blue[700],
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Kode: $kodeAlat',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(height: 12),
                     ],
-                  ),
+
+                    // Product Details Row
+                    _buildCompactProductDetailsRow(
+                      kodeKategori,
+                      kategori,
+                      kondisiText,
+                      stok,
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Info Row: Tanggal Dibuat + Status
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Dibuat',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  tanggalText,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: statusColor.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      status == 'tersedia'
+                                          ? Icons.check_circle
+                                          : status == 'dipinjam'
+                                          ? Icons.access_time
+                                          : Icons.cancel,
+                                      size: 14,
+                                      color: statusColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Status',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  statusText,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: statusColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Admin Actions
+                    _buildCompactAdminActions(context),
+                  ],
                 ),
-
-                const SizedBox(height: 12),
-
-                // Admin Actions
-                _buildCompactAdminActions(context),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
+
+  // ... (method-method lainnya tetap sama: _buildCompactProductDetailsRow, _buildCompactAdminActions, dll)
+  // Saya tidak tulis ulang semua method untuk efisiensi, hanya struktur wrapper yang berubah
 
   Widget _buildCompactProductDetailsRow(
     String kodeKategori,
@@ -179,155 +305,58 @@ class DataAlatNew extends StatelessWidget {
 
     return Row(
       children: [
-        // Kode Kategori
         Expanded(
           flex: 2,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Kode',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  kodeKategori,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
+          child: _buildInfoBox('Kode', kodeKategori, Colors.grey),
         ),
-        const SizedBox(width: 8),
-
-        // Kategori
+        const SizedBox(width: 10),
         Expanded(
           flex: 3,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Kategori',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  kategori,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
+          child: _buildInfoBox('Kategori', kategori, Colors.grey),
         ),
-        const SizedBox(width: 8),
-
-        // Kondisi
+        const SizedBox(width: 10),
         Expanded(
           flex: 2,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: kondisiColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: kondisiColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Kondisi',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  kondisiText,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: kondisiColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
+          child: _buildInfoBox('Kondisi', kondisiText, kondisiColor),
         ),
-        const SizedBox(width: 8),
-
-        // Stok
-        Expanded(
-          flex: 2,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.orange[300]!),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Stok',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$stok',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        const SizedBox(width: 10),
+        Expanded(flex: 2, child: _buildInfoBox('Stok', '$stok', Colors.orange)),
       ],
+    );
+  }
+
+  Widget _buildInfoBox(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 
@@ -584,115 +613,127 @@ class DataAlatNew extends StatelessWidget {
         title: const Text('Edit Alat'),
         content: SizedBox(
           width: 300,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: namaController,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Alat',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: stokController,
-                decoration: const InputDecoration(
-                  labelText: 'Stok',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: urlGambarController,
-                decoration: const InputDecoration(
-                  labelText: 'URL Gambar',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Kode Alat field
-              TextField(
-                controller: kodeAlatController,
-                decoration: const InputDecoration(
-                  labelText: 'Kode Alat (opsional)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Kondisi Dropdown
-              DropdownButtonFormField<String>(
-                value: selectedKondisi,
-                decoration: const InputDecoration(
-                  labelText: 'Kondisi',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'baik', child: Text('Baik')),
-                  DropdownMenuItem(
-                    value: 'rusak_ringan',
-                    child: Text('Rusak Ringan'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'rusak_berat',
-                    child: Text('Rusak Berat'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    selectedKondisi = value;
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              // Status Dropdown
-              DropdownButtonFormField<String>(
-                value: selectedStatus,
-                decoration: const InputDecoration(
-                  labelText: 'Status *',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'tersedia', child: Text('Tersedia')),
-                  DropdownMenuItem(value: 'dipinjam', child: Text('Dipinjam')),
-                  DropdownMenuItem(value: 'tidak_layak', child: Text('Tidak Layak')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    selectedStatus = value;
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              // Kategori Dropdown
-              Obx(() {
-                return DropdownButtonFormField<int>(
-                  value: selectedKategoriId == 0 ? null : selectedKategoriId,
+          child: SingleChildScrollView(
+            // Tambahkan ini agar dialog scrollable
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: namaController,
                   decoration: const InputDecoration(
-                    labelText: 'Kategori',
+                    labelText: 'Nama Alat *',
                     border: OutlineInputBorder(),
                   ),
-                  items: [
-                    const DropdownMenuItem(
-                      value: 0,
-                      child: Text('Tidak ada kategori'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: stokController,
+                  decoration: const InputDecoration(
+                    labelText: 'Stok *',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: urlGambarController,
+                  decoration: const InputDecoration(
+                    labelText: 'URL Gambar',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Kode Alat field
+                TextField(
+                  controller: kodeAlatController,
+                  decoration: const InputDecoration(
+                    labelText: 'Kode Alat (opsional)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Kondisi Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedKondisi,
+                  decoration: const InputDecoration(
+                    labelText: 'Kondisi *',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'baik', child: Text('Baik')),
+                    DropdownMenuItem(
+                      value: 'rusak_ringan',
+                      child: Text('Rusak Ringan'),
                     ),
-                    ...controller.kategoriOptions.map(
-                      (kategori) => DropdownMenuItem(
-                        value: kategori.id,
-                        child: Text(kategori.nama),
-                      ),
+                    DropdownMenuItem(
+                      value: 'rusak_berat',
+                      child: Text('Rusak Berat'),
                     ),
                   ],
                   onChanged: (value) {
                     if (value != null) {
-                      selectedKategoriId = value;
+                      selectedKondisi = value;
                     }
                   },
-                );
-              }),
-            ],
+                ),
+                const SizedBox(height: 16),
+                // Status Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedStatus,
+                  decoration: const InputDecoration(
+                    labelText: 'Status *',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'tersedia',
+                      child: Text('Tersedia'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'dipinjam',
+                      child: Text('Dipinjam'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'tidak_layak',
+                      child: Text('Tidak Layak'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      selectedStatus = value;
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                // Kategori Dropdown
+                Obx(() {
+                  return DropdownButtonFormField<int>(
+                    value: selectedKategoriId == 0 ? null : selectedKategoriId,
+                    decoration: const InputDecoration(
+                      labelText: 'Kategori',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: 0,
+                        child: Text('Tidak ada kategori'),
+                      ),
+                      ...controller.kategoriOptions.map(
+                        (kategori) => DropdownMenuItem(
+                          value: kategori.id,
+                          child: Text(kategori.nama),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        selectedKategoriId = value;
+                      }
+                    },
+                  );
+                }),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -702,25 +743,39 @@ class DataAlatNew extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (namaController.text.isNotEmpty) {
-                Navigator.pop(context);
-                await controller.updateAlat(
-                  id: alat.id,
-                  nama: namaController.text.trim(),
-                  stok: int.tryParse(stokController.text) ?? alat.stok,
-                  urlGambar: urlGambarController.text.trim().isEmpty
-                      ? null
-                      : urlGambarController.text.trim(),
-                  kondisi: selectedKondisi,
-                  status: selectedStatus,
-                  kodeAlat: kodeAlatController.text.trim().isEmpty
-                      ? null
-                      : kodeAlatController.text.trim(),
-                  kategoriId: selectedKategoriId == 0
-                      ? null
-                      : selectedKategoriId,
+              if (namaController.text.trim().isEmpty) {
+                Get.snackbar(
+                  'Peringatan',
+                  'Nama alat tidak boleh kosong',
+                  snackPosition: SnackPosition.BOTTOM,
                 );
+                return;
               }
+              if (int.tryParse(stokController.text) == null ||
+                  int.parse(stokController.text) <= 0) {
+                Get.snackbar(
+                  'Peringatan',
+                  'Stok harus angka positif',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+                return;
+              }
+
+              Navigator.pop(context);
+              await controller.updateAlat(
+                id: alat.id,
+                nama: namaController.text.trim(),
+                stok: int.parse(stokController.text),
+                urlGambar: urlGambarController.text.trim().isEmpty
+                    ? null
+                    : urlGambarController.text.trim(),
+                kondisi: selectedKondisi,
+                status: selectedStatus,
+                kodeAlat: kodeAlatController.text.trim().isEmpty
+                    ? null
+                    : kodeAlatController.text.trim(),
+                kategoriId: selectedKategoriId == 0 ? null : selectedKategoriId,
+              );
             },
             child: const Text('Simpan'),
           ),
