@@ -24,6 +24,6 @@ class GlobalUserController extends GetxController {
     }
 
     Get.offAll(() => LoginView(), );
-    // Get.offAll(() => LoginView(), binding: InitialBinding());
+    Get.offAll(() => LoginView(), binding: InitialBinding());
   }
 }

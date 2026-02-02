@@ -29,7 +29,7 @@ class LogAktivitasService {
       // Process the response
       List<AppLogAktivitas> logs = [];
       
-      if (response is List && response.isNotEmpty) {
+      if (response.isNotEmpty) {
         for (var item in response) {
           Map<String, dynamic> processedItem = Map<String, dynamic>.from(item);
           
@@ -102,7 +102,7 @@ class LogAktivitasService {
       // Process the response
       List<AppLogAktivitas> logs = [];
       
-      if (response is List && response.isNotEmpty) {
+      if (response.isNotEmpty) {
         for (var item in response) {
           Map<String, dynamic> processedItem = Map<String, dynamic>.from(item);
           
@@ -150,7 +150,7 @@ class LogAktivitasService {
       // Process the response
       List<AppLogAktivitas> logs = [];
       
-      if (response is List && response.isNotEmpty) {
+      if (response.isNotEmpty) {
         for (var item in response) {
           Map<String, dynamic> processedItem = Map<String, dynamic>.from(item);
           

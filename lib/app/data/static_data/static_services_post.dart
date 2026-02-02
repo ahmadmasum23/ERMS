@@ -1,5 +1,4 @@
 import '../models/AppPengajuan.dart';
-import '../models/AppUser.dart';
 import '../static_data/static_providers.dart';
 
 class StaticServicesPost {

@@ -4,4 +4,5 @@ linter:
 analyzer:
   errors:
     deprecated_member_use: ignore
+    unnecessary_null_comparison: ignore
     
