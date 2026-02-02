@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/state_manager.dart';
 import 'package:inven/app/global/widgets/CustomBG.dart';
 import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
-import 'package:inven/app/modules/borrower/views/pengajuan/AjukanBarang.dart';
-import 'package:inven/app/modules/borrower/views/pengajuan/AjukanInstansi.dart';
+import 'package:inven/app/modules/borrower/views/pengajuan/AjukanKategori.dart';
+import 'package:inven/app/modules/borrower/views/pengajuan/AjukanDaftarAlat.dart';
 import 'package:inven/app/modules/borrower/views/pengajuan/AjukanKembali.dart';
 import 'package:inven/app/modules/borrower/views/pengajuan/AjukanKeperluan.dart';
 import 'package:inven/app/modules/borrower/views/pengajuan/AjukanPemohon.dart';
@@ -44,10 +44,6 @@ class BorrowerAjukanPanel extends GetView<BorrowerController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(child: AjukanPemohon()),
-
-                  const SizedBox(width: 20),
-
-                  Expanded(child: AjukanInstansi()),
                 ],
               ),
 
@@ -55,17 +51,8 @@ class BorrowerAjukanPanel extends GetView<BorrowerController> {
 
               AjukanKeperluan(),
 
-              const SizedBox(height: 20),
-
-              Text('Detail peminjaman', style: impl),
-
-              const SizedBox(height: 8),
-
-              AjukanBarang(),
-
               const SizedBox(height: 10),
-
-              Row(
+               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(child: AjukanPinjam()),
@@ -78,11 +65,25 @@ class BorrowerAjukanPanel extends GetView<BorrowerController> {
 
               const SizedBox(height: 20),
 
-              Text('Unit barang', style: impl),
+              // Add the new category selection field
+              AjukanKategori(),
 
+              const SizedBox(height: 10),
+
+              // Add the equipment list based on selected category
+              Text('Daftar Alat', style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 5),
+              AjukanDaftarAlat(),
 
-              Expanded(child: AjukanUnit()),
+              const SizedBox(height: 10),
+
+             
+
+              // Text('Unit barang', style: impl),
+
+              // const SizedBox(height: 5),
+
+              // Expanded(child: AjukanUnit()),
             ],
           ),
         ),

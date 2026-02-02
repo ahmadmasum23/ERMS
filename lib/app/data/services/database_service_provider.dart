@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../models/AppUser.dart';
+import '../models/ProfilPengguna.dart';
 import 'auth_service.dart';
 import 'user_service.dart';
 
@@ -10,39 +10,38 @@ class DatabaseServiceProvider {
 
   static Future<void> initialize() async => _auth.init();
 
-  static Future<AppUser?> login(String email, String password) async {
+  static Future<ProfilPengguna?> login(String email, String password) async {
     final user = await _auth.login(email, password);
     if (user == null) return null;
     return await _user.getProfile();
   }
 
   static Future<void> register({
-  required String email,
-  required String password,
-  required String nama,
-  required String peran,
-  required String alamat,
-  required String nomorHp,
-}) async {
-  final supabase = Supabase.instance.client;
+    required String email,
+    required String password,
+    required String namaLengkap,
+    required String peran,
+    String? alamat,
+    String? nomorHp,
+  }) async {
+    final supabase = Supabase.instance.client;
 
-  final auth = await supabase.auth.signUp(
-    email: email,
-    password: password,
-  );
+    final auth = await supabase.auth.signUp(
+      email: email,
+      password: password,
+    );
 
-  final user = auth.user;
-  if (user == null) throw Exception("User gagal dibuat");
+    final user = auth.user;
+    if (user == null) throw Exception("User gagal dibuat");
 
-  await supabase.from('profil_pengguna').insert({
-    'id': user.id,
-    'nama_lengkap': nama,
-    'peran': peran,
-    'alamat': alamat,
-    'nomor_hp': nomorHp,
-  });
-}
-
+    await supabase.from('profil_pengguna').insert({
+      'id': user.id,
+      'nama_lengkap': namaLengkap,
+      'peran': peran,
+      'alamat': alamat,
+      'nomor_hp': nomorHp,
+    });
+  }
 
   static Future<void> logout() => _auth.logout();
 

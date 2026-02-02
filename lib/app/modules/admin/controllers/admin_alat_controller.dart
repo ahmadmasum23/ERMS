@@ -1,17 +1,17 @@
-  import 'dart:io';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-  import 'package:get/get.dart';
-  import '../../../data/models/AppAlat.dart';
-  import '../../../data/models/AppKategori.dart';
-  import '../../../data/services/alat_service.dart';
+import 'package:get/get.dart';
+import '../../../data/models/Alat.dart';
+import '../../../data/models/KategoriAlat.dart';
+import '../../../data/services/alat_service.dart';
 
-  class AdminAlatController extends GetxController {
-    final AlatService _alatService = AlatService();
+class AdminAlatController extends GetxController {
+  final AlatService _alatService = AlatService();
 
-    var alatList = <AppAlat>[].obs;
-    var filteredAlatList = <AppAlat>[].obs;
-    var kategoriOptions = <AppKategori>[].obs;
+  var alatList = <Alat>[].obs;
+  var filteredAlatList = <Alat>[].obs;
+  var kategoriOptions = <KategoriAlat>[].obs;
     var isLoading = false.obs;
     var selectedKategoriFilter = 0.obs; // 0 = all categories
     
@@ -200,13 +200,13 @@ import 'package:flutter/material.dart';
     }
 
     void filterAlat() {
-      List<AppAlat> filtered = [...alatList];
+      List<Alat> filtered = [...alatList];
       
       // Filter by search term
       if (searchController.text.isNotEmpty) {
         final searchTerm = searchController.text.toLowerCase();
         filtered = filtered.where((alat) => 
-          alat.nama.toLowerCase().contains(searchTerm)
+          (alat.nama?.toLowerCase().contains(searchTerm) ?? false)
         ).toList();
       }
       
@@ -229,7 +229,7 @@ import 'package:flutter/material.dart';
       filterAlat();
     }
 
-    List<AppAlat> getAlatByKondisi(String kondisi) {
+    List<Alat> getAlatByKondisi(String kondisi) {
       return alatList.where((alat) => alat.kondisi == kondisi).toList();
     }
 

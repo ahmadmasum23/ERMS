@@ -1,58 +1,71 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppBarang.dart';
 import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
 
 class AjukanBarang extends GetView<BorrowerController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final daftar = controller.itemList;
-
-      return DropdownSearch<AppBarang>(
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
+      if (controller.isLoading.value) {
+        return DropdownButtonFormField<int>(
+          value: null,
+          decoration: const InputDecoration(
             isDense: true,
-            hintText: 'Pilih barang',
-            hintStyle: TextStyle(color: Colors.grey),
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.shade900),
-              borderRadius: BorderRadius.circular(5),
+            contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            labelText: 'Nama barang',
+            labelStyle: TextStyle(color: Colors.grey),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey),
             ),
           ),
+          items: const [],
+          onChanged: null,
+        );
+      }
+
+      return DropdownButtonFormField<int?> (
+        key: controller.dropitem,
+        value: controller.selectedItemId.value,
+        decoration: InputDecoration(
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          labelText: 'Nama alat *',
+          labelStyle: TextStyle(color: Colors.grey),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.refresh, size: 18),
+            onPressed: () {
+              print('DEBUG: Refresh button pressed');
+              controller.manualRefresh();
+            },
+          ),
         ),
-
-        items: daftar,
-
-        itemAsString: (item) => item.nmBarang,
-
-        selectedItem: daftar.firstWhereOrNull(
-          (i) => i.id == controller.slctItemId.value,
-        ),
-
-        popupProps: PopupProps.menu(
-          constraints: BoxConstraints(maxHeight: 200),
-          itemBuilder: (context, item, isSelected) {
-            return ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              title: Text(item.nmBarang, style: TextStyle(fontSize: 12)),
-            );
-          },
-        ),
-
-        dropdownBuilder: (context, selectedItem) {
-          return Text(
-            selectedItem?.nmBarang ?? 'Pilih barang',
-            style: TextStyle(fontSize: 12),
-          );
-        },
-
-        onChanged: (val) {
-          if (val != null) controller.slctItemId.value = val.id;
+        items: [
+          const DropdownMenuItem(
+            value: null,
+            child: Text('Pilih alat'),
+          ),
+          ...controller.itemList.where((item) {
+            // Filter items by selected category if a category is selected
+            if (controller.slctKategoriId.value != null) {
+              return item.kategoriId == controller.slctKategoriId.value;
+            }
+            // If no category is selected, show all items
+            return true;
+          }).map(
+            (item) => DropdownMenuItem(
+              value: item.id,
+              child: Text(item.nama),
+            ),
+          ),
+        ],
+        onChanged: (value) {
+          controller.selectedItemId.value = value;
+          // Reset unit selection when item changes
+          controller.slctUnitId.clear();
+          controller.isCheckAll.value = false;
         },
       );
     });

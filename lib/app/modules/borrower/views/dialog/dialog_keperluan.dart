@@ -7,12 +7,8 @@ class DialogKeperluan extends GetView<BorrowerController> {
 
   @override
   Widget build(BuildContext context) {
-    final text = controller.ctrlKeperluan.text.isEmpty
-        ? '...'
-        : controller.ctrlKeperluan.text;
-
     return TextField(
-      controller: TextEditingController(text: text),
+      controller: controller.ctrlKeperluan,
       readOnly: true,
       enabled: false,
       maxLines: null,

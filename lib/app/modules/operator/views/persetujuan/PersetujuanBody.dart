@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppPengajuan.dart';
+import 'package:inven/app/data/models/Peminjaman.dart';
 import 'package:inven/app/modules/operator/controllers/operator_controller.dart';
-import 'package:inven/app/modules/operator/views/persetujuan/PersetujuanData.dart';
 import 'package:inven/app/modules/borrower/views/riwayat/RiwayatTable.dart';
 
 class PersetujuanBody extends GetView<OperatorController> {
-  final AppPengajuan model;
+  final Peminjaman model;
 
   const PersetujuanBody({required this.model, super.key});
 
@@ -33,20 +32,130 @@ class PersetujuanBody extends GetView<OperatorController> {
                 color: const Color(0xffF4F7F7),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: PersetujuanData(
-                itemId: model.id,
-                expand: isExpanded,
-                model: model,
-                bttn: () {
-                  controller.expandP.value = isExpanded ? '' : id;
-                },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Borrower information
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          model.peminjam?.namaLengkap ?? 'Peminjam tidak dikenal',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          'Keperluan: ${model.alasan ?? 'Tidak diisi'}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          'Tanggal Pinjam: ${model.tanggalPinjam.toString().split(' ')[0]}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        Text(
+                          'Tanggal Jatuh Tempo: ${model.tanggalJatuhTempo.toString().split(' ')[0]}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Action buttons
+                  Row(
+                    children: [
+                      // Approve button
+                      Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        child: ElevatedButton(
+                          onPressed: controller.bttnLoad.value 
+                            ? null 
+                            : () => controller.updtData(model.id, 2), // 2 = Disetujui
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 10,
+                            ),
+                          ),
+                          child: controller.bttnLoad.value
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Setujui'),
+                        ),
+                      ),
+                      
+                      // Reject button
+                      Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        child: ElevatedButton(
+                          onPressed: controller.bttnLoad.value 
+                            ? null 
+                            : () => controller.updtData(model.id, 3), // 3 = Ditolak
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15,
+                              vertical: 10,
+                            ),
+                          ),
+                          child: controller.bttnLoad.value
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Tolak'),
+                        ),
+                      ),
+                      
+                      // Expand button
+                      IconButton(
+                        onPressed: () {
+                          if (isExpanded) {
+                            controller.expandP.value = '';
+                          } else {
+                            controller.expandP.value = id;
+                          }
+                        },
+                        icon: Icon(
+                          isExpanded ? Icons.expand_less : Icons.expand_more,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
 
             if (isExpanded) ...[
               const SizedBox(height: 10),
-
-              RiwayatTable(model: model),
+              RiwayatTable(model: model.toAppPengajuan()),
             ],
           ],
         ),

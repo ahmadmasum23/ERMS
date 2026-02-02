@@ -48,7 +48,7 @@ class AdminUserController extends GetxController {
   Future<bool> addUser({
     required String email,
     required String password,
-    required String nama,
+    required String namaLengkap,
     required String peran,
     required String alamat,
     required String nomorHp,
@@ -59,7 +59,7 @@ class AdminUserController extends GetxController {
       await DatabaseServiceProvider.register(
         email: email,
         password: password,
-        nama: nama,
+        namaLengkap: namaLengkap,
         peran: peran,
         alamat: alamat,
         nomorHp: nomorHp,
@@ -69,7 +69,7 @@ class AdminUserController extends GetxController {
       
       Get.snackbar(
         "✓ Berhasil",
-        "User '$nama' berhasil ditambahkan",
+        "User '$namaLengkap' berhasil ditambahkan",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade900,

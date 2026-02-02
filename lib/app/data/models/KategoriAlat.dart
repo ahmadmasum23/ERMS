@@ -1,10 +1,10 @@
-class AppKategori {
+class KategoriAlat {
   final int id;
   final String kode;
   final String nama;
   final DateTime? dibuatPada;
 
-  AppKategori({
+  KategoriAlat({
     required this.id,
     required this.kode,
     required this.nama,
@@ -20,9 +20,9 @@ class AppKategori {
     };
   }
 
-  factory AppKategori.fromJson(Map<String, dynamic> json) {
-    return AppKategori(
-      id: int.tryParse(json['id'].toString()) ?? 0,
+  factory KategoriAlat.fromJson(Map<String, dynamic> json) {
+    return KategoriAlat(
+      id: int.parse(json['id'].toString()),
       kode: json['kode'] ?? '',
       nama: json['nama'] ?? '',
       dibuatPada: json['dibuat_pada'] != null
@@ -30,7 +30,4 @@ class AppKategori {
           : null,
     );
   }
-
-  // For backward compatibility with existing code
-  String get kategori => nama;
 }

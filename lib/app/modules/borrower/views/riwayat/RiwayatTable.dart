@@ -4,101 +4,88 @@ import 'package:inven/app/data/models/AppPengajuan.dart';
 class RiwayatTable extends StatelessWidget {
   final AppPengajuan model;
 
-  const RiwayatTable({required this.model, super.key});
+  const RiwayatTable({Key? key, required this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    //style
-    final title = const TextStyle(fontSize: 13);
-    final titleColumn = const TextStyle(color: Colors.white, fontSize: 12);
-    final subTcolumn = const TextStyle(fontSize: 12);
-    final padColumnT = const EdgeInsets.all(8);
-    final padColumnS = const EdgeInsets.all(6);
-    final nama_barang = model.unit?.first.barang?.nmBarang ?? '-';
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xffF4F7F7),
-        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Detail Pengajuan',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildRow('ID Peminjaman', model.id.toString()),
+            _buildRow('Tanggal Pinjam', model.tanggalPinjam.toString().split(' ')[0]),
+            _buildRow('Tanggal Jatuh Tempo', model.tanggalJatuhTempo.toString().split(' ')[0]),
+            _buildRow('Status', _getStatusDisplay(model.status)),
+            if (model.tanggalKembali != null)
+              _buildRow('Tanggal Kembali', model.tanggalKembali!.toString().split(' ')[0]),
+            if (model.hariTerlambat > 0)
+              _buildRow('Hari Terlambat', model.hariTerlambat.toString()),
+            if (model.alasan != null && model.alasan!.isNotEmpty)
+              _buildRow('Alasan', model.alasan!),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text('Detail unit ', style: title),
-              Text(
-                nama_barang,
-                style: TextStyle(
-                  color: Colors.blue.shade500,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
               ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 5),
-
-          Table(
-            columnWidths: const {
-              0: FixedColumnWidth(35),
-              1: FlexColumnWidth(2),
-              2: FlexColumnWidth(2),
-            },
-            border: TableBorder.all(color: Colors.grey.shade500),
-            children: [
-              TableRow(
-                decoration: BoxDecoration(color: Colors.grey.shade900),
-                children: [
-                  Padding(
-                    padding: padColumnT,
-                    child: Center(child: Text('No', style: titleColumn)),
-                  ),
-                  Padding(
-                    padding: padColumnT,
-                    child: Center(
-                      child: Text('Kode unit barang', style: titleColumn),
-                    ),
-                  ),
-                  Padding(
-                    padding: padColumnT,
-                    child: Center(
-                      child: Text('No. seri unit', style: titleColumn),
-                    ),
-                  ),
-                ],
+          Text(':'),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.grey[800],
               ),
-
-              ...model.unit!.asMap().entries.map((e) {
-                final nomor = e.key + 1;
-                final unit = e.value;
-
-                return TableRow(
-                  children: [
-                    Padding(
-                      padding: padColumnS,
-                      child: Center(
-                        child: Text(nomor.toString(), style: subTcolumn),
-                      ),
-                    ),
-                    Padding(
-                      padding: padColumnS,
-                      child: Text(unit.kdUnit, style: subTcolumn),
-                    ),
-                    Padding(
-                      padding: padColumnS,
-                      child: Text(unit.noSeri, style: subTcolumn),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  String _getStatusDisplay(String status) {
+    switch (status) {
+      case 'menunggu':
+        return 'Menunggu';
+      case 'disetujui':
+        return 'Disetujui';
+      case 'ditolak':
+        return 'Ditolak';
+      case 'dikembalikan':
+        return 'Dikembalikan';
+      default:
+        return status;
+    }
   }
 }

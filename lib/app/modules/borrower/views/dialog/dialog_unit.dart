@@ -7,27 +7,46 @@ class DialogUnit extends GetView<BorrowerController> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: TextEditingController(
-        text: controller.slctUnitId.length.toString(),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(4),
+        color: Colors.grey.shade50,
       ),
-      readOnly: true,
-      enabled: false,
-      maxLines: null,
-      style: TextStyle(color: Colors.grey.shade900, fontSize: 12),
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.shopping_cart, color: Colors.grey.shade900),
-        label: Text('Jumlah unit barang'),
-        labelStyle: TextStyle(
-          color: Colors.grey.shade900,
-          fontWeight: FontWeight.w600,
-        ),
-        isDense: true,
-        disabledBorder: OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 15,
-          horizontal: 10,
-        ),
+      child: Row(
+        children: [
+          Icon(Icons.category, color: Colors.grey.shade700, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            'Kategori: ',
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 14,
+            ),
+          ),
+          if (controller.slctKategoriId.value != null)
+            Text(
+              controller.kategoriList
+                  .firstWhereOrNull((k) => k.id == controller.slctKategoriId.value)
+                  ?.nama ??
+                  'Tidak ditemukan',
+              style: TextStyle(
+                color: Colors.blue.shade700,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            )
+          else
+            Text(
+              'Belum dipilih',
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+                fontSize: 14,
+              ),
+            ),
+        ],
       ),
     );
   }

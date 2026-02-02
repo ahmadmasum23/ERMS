@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppLogAktivitas.dart';
+import 'package:inven/app/data/models/LogAktivitas.dart';
 import 'package:inven/app/data/services/log_aktivitas_service.dart';
 
 class AdminActivityLogController extends GetxController {
   final LogAktivitasService _logService = LogAktivitasService();
 
-  var logs = <AppLogAktivitas>[].obs;
+  var logs = <LogAktivitas>[].obs;
   var isLoading = false.obs;
   var searchController = TextEditingController();
   var selectedAction = ''.obs;
@@ -136,8 +136,8 @@ class AdminActivityLogController extends GetxController {
   }
 
   // Helper method to get filtered logs for UI
-  List<AppLogAktivitas> get filteredLogs {
-    List<AppLogAktivitas> result = [];
+  List<LogAktivitas> get filteredLogs {
+    List<LogAktivitas> result = [];
     
     // Make sure logs is not empty before processing
     if (logs.isNotEmpty) {
@@ -147,8 +147,8 @@ class AdminActivityLogController extends GetxController {
       if (searchController.text.isNotEmpty) {
         final searchTerm = searchController.text.toLowerCase();
         result = result.where((log) =>
-          log.aksi.toLowerCase().contains(searchTerm) ||
-          log.entitas.toLowerCase().contains(searchTerm) ||
+          (log.aksi?.toLowerCase().contains(searchTerm) ?? false) ||
+          (log.entitas?.toLowerCase().contains(searchTerm) ?? false) ||
           (log.namaPengguna != null && log.namaPengguna!.toLowerCase().contains(searchTerm))
         ).toList();
       }
@@ -170,7 +170,7 @@ class AdminActivityLogController extends GetxController {
   // Get unique actions for filter dropdown
   List<String> getUniqueActions() {
     if (logs.isEmpty) return [];
-    return logs.map((log) => log.aksi).toSet().toList();
+    return logs.map((log) => log.aksi ?? '').where((aksi) => aksi.isNotEmpty).toSet().toList();
   }
 
   // Get unique entities for filter dropdown

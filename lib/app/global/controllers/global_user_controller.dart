@@ -1,13 +1,13 @@
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppUser.dart';
+import 'package:inven/app/data/models/ProfilPengguna.dart';
 import 'package:inven/app/global/bindings/InitialBinding.dart';
 import 'package:inven/app/modules/login/controllers/login_controller.dart';
 import 'package:inven/app/modules/login/views/login_view.dart';
 
 class GlobalUserController extends GetxController {
-  final user = Rxn<AppUser>();
+  final user = Rxn<ProfilPengguna>();
 
-  void setUser(AppUser model) {
+  void setUser(ProfilPengguna model) {
     user.value = model;
   }
 
@@ -26,4 +26,11 @@ class GlobalUserController extends GetxController {
     Get.offAll(() => LoginView(), );
     Get.offAll(() => LoginView(), binding: InitialBinding());
   }
+
+  // Helper methods for role checking
+  bool get isAdmin => user.value?.isAdmin ?? false;
+  bool get isPetugas => user.value?.isPetugas ?? false;
+  bool get isPeminjam => user.value?.isPeminjam ?? false;
+  String get userId => user.value?.id ?? '';
+  String get userName => user.value?.namaLengkap ?? '';
 }

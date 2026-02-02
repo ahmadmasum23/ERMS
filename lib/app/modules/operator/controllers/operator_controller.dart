@@ -2,20 +2,26 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppPengajuan.dart';
-import 'package:inven/app/data/models/AppUnitBarang.dart';
-import 'package:inven/app/data/models/AppUser.dart';
-import 'package:inven/app/data/static_data/static_services_get.dart';
-import 'package:inven/app/data/static_data/static_services_update.dart';
+import 'package:inven/app/data/models/Peminjaman.dart';
+import 'package:inven/app/data/models/ProfilPengguna.dart';
+import 'package:inven/app/data/services/peminjaman_service.dart';
 import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/modules/login/controllers/login_controller.dart';
 import 'package:inven/app/modules/login/views/login_view.dart';
 
 class OperatorController extends GetxController {
   late final GlobalUserController userCtrl;
-  final services = StaticServicesGet();
+  final PeminjamanService _peminjamanService = PeminjamanService();
 
-  AppUser? get userData => userCtrl.user.value;
+  ProfilPengguna? get userData => userCtrl.user.value;
+
+  @override
+  void onClose() {
+    ctrlNote.dispose();
+    ctrlFill.dispose();
+    focusFil.dispose();
+    super.onClose();
+  }
 
   @override
   void onInit() {
@@ -26,7 +32,7 @@ class OperatorController extends GetxController {
       // If not found, create a new one
       userCtrl = Get.put(GlobalUserController());
     }
-    
+                
     super.onInit();
     fetchData();
   }
@@ -43,19 +49,19 @@ class OperatorController extends GetxController {
   final ctrlFill = TextEditingController();
   final focusFil = FocusNode();
 
-  final pengajuan = <AppPengajuan>[].obs;
-  final kembalian = <AppPengajuan>[].obs;
-  final riwayatAll = <AppPengajuan>[].obs;
-  var riwayatFilter = <AppPengajuan>[].obs;
+  final pengajuan = <Peminjaman>[].obs;
+  final kembalian = <Peminjaman>[].obs;
+  final riwayatAll = <Peminjaman>[].obs;
+  var riwayatFilter = <Peminjaman>[].obs;
 
   Timer? _debounce;
 
   final Map<int, String> opsiFilter = {
     0: '|||',
-    8: 'Proses',
-    1: 'Ditolak',
-    4: 'Dipinjam',
-    2: 'Selesai',
+    1: 'Menunggu',
+    2: 'Disetujui',
+    3: 'Ditolak',
+    4: 'Dikembalikan',
   };
   var selectOpsi = 0.obs;
 
@@ -66,22 +72,22 @@ class OperatorController extends GetxController {
 
     if (select == 0) {
       riwayatFilter.assignAll(riwayatAll);
-    } else if (select == 8) {
-      riwayatFilter.assignAll(
-        riwayatAll
-            .where((r) => r.status?.id == 3 || r.status?.id == 5)
-            .toList(),
-      );
-    } else if (select == 2) {
-      riwayatFilter.assignAll(
-        riwayatAll
-            .where((r) => r.status?.id == 2 || r.status?.id == 6)
-            .toList(),
-      );
     } else {
       riwayatFilter.assignAll(
-        riwayatAll.where((r) => r.status?.id == select).toList(),
+        riwayatAll
+            .where((r) => r.status == getStatusString(select))
+            .toList(),
       );
+    }
+  }
+
+  String getStatusString(int statusId) {
+    switch (statusId) {
+      case 1: return 'menunggu';
+      case 2: return 'disetujui';
+      case 3: return 'ditolak';
+      case 4: return 'dikembalikan';
+      default: return 'menunggu';
     }
   }
 
@@ -95,17 +101,14 @@ class OperatorController extends GetxController {
     );
   }
 
-  void initUnit(List<AppUnitBarang> units) {
+  void initUnit(List<dynamic> units) {
     selectUnit.clear();
-    for (final u in units) {
-      selectUnit[u.id] = false;
-    }
+    // Implementation for unit selection
   }
   
   void cetakPdfRiwayat() {
-  // TODO: Implementasi PDF (gunakan package seperti `pdf` dan `printing`)
-  Get.snackbar('Info', 'Fitur cetak PDF akan segera tersedia');
-}
+    Get.snackbar('Info', 'Fitur cetak PDF akan segera tersedia');
+  }
 
   List<Map<String, dynamic>> getSelectUnit() {
     return selectUnit.entries
@@ -125,13 +128,21 @@ class OperatorController extends GetxController {
       bttnLoad.value = true;
 
       final note = ctrlNote.text;
-      final result = await StaticServicesUpdate().prosesAppr(id, statusId, note);
+      final status = getStatusString(statusId);
+      
+      final result = await _peminjamanService.updatePeminjaman(
+        id: id,
+        status: status,
+        alasan: note,
+        disetujuiOleh: userData?.id,
+      );
 
-      if (result != null) {
+      if (result) {
         Get.snackbar(
           'Sukses',
-          statusId == 4 ? 'Pengajuan disetujui' : 'Pengajuan ditolak',
+          statusId == 2 ? 'Pengajuan disetujui' : 'Pengajuan ditolak',
         );
+        await fetchData(); // Refresh data
       } else {
         Get.snackbar('Gagal', 'Terjadi kegagalan proses');
       }
@@ -148,11 +159,17 @@ class OperatorController extends GetxController {
       bttnLoad.value = true;
 
       final unit = getSelectUnit();
-      final result = await StaticServicesUpdate().prosesRett(id, unit);
+      // Update peminjaman status to 'dikembalikan'
+      final result = await _peminjamanService.updatePeminjaman(
+        id: id,
+        status: 'dikembalikan',
+        tanggalKembali: DateTime.now(),
+      );
 
-      if (result != null) {
+      if (result) {
         Get.back();
         Get.snackbar('Sukses', 'Pengembalian diproses');
+        await fetchData(); // Refresh data
       } else {
         Get.snackbar('Gagal', 'Pengembalian gagal');
       }
@@ -181,17 +198,17 @@ class OperatorController extends GetxController {
     try {
       isLoading.value = true;
 
-      final dataPengajuan = await services.indexApp();
-      final pengembalian = await services.returnApp();
-      final riwayatData = await services.indexAll();
+      final dataPengajuan = await _peminjamanService.getAllPeminjaman();
+      final pengembalian = dataPengajuan.where((p) => p.status == 'dikembalikan').toList();
+      final riwayatData = dataPengajuan;
 
       pengajuan.assignAll(dataPengajuan);
       kembalian.assignAll(pengembalian);
       riwayatAll.assignAll(riwayatData);
-      print('cek status: ${riwayatAll.map((e) => e.status?.id)}');
+      print('cek status: ${riwayatAll.map((e) => e.status)}');
       riwayatFilter.assignAll(riwayatData);
     } catch (e) {
-      Get.snackbar('Error', 'Error fetch data controller');
+      Get.snackbar('Error', 'Error fetch data controller: $e');
     } finally {
       isLoading.value = false;
     }
@@ -209,15 +226,11 @@ class OperatorController extends GetxController {
       }
 
       final hasil = riwayatAll.where((r) {
-        final pengguna = r.pengguna!.nama.toLowerCase();
-        final keperluan = r.hal!.toLowerCase();
-        final barang = r.unit
-            ?.map((u) => u.barang!.nmBarang.toLowerCase())
-            .join(' ');
-
-        return barang!.contains(keyword) ||
-            keperluan.contains(keyword) ||
-            pengguna.contains(keyword);
+        final peminjam = r.peminjam?.namaLengkap.toLowerCase() ?? '';
+        final alasan = r.alasan?.toLowerCase() ?? '';
+        
+        return peminjam.contains(keyword) ||
+            alasan.contains(keyword);
       }).toList();
 
       pengajuan.assignAll(hasil);

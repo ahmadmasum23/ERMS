@@ -489,7 +489,7 @@ class AdminUserManagementView extends StatelessWidget {
                   : () async {
                       if (_formKey.currentState!.validate()) {
                         final success = await controller.addUser(
-                          nama: nameController.text.trim(),
+                          namaLengkap: nameController.text.trim(),
                           email: emailController.text.trim(),
                           password: passController.text.trim(),
                           peran: selectedRole.value,

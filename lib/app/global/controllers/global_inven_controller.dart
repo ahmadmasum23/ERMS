@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppBarang.dart';
-import 'package:inven/app/data/static_data/static_services_get.dart';
+import 'package:inven/app/data/models/Alat.dart';
+import 'package:inven/app/data/services/alat_service.dart';
+import 'package:inven/app/data/services/auth_service.dart';
 
 class GlobalInvenController extends GetxController {
+  // Service untuk database operations
+  final AlatService _alatService = AlatService();
+  
   //controller untuk input teks dari TextField
   final ctrlFilter = TextEditingController();
 
@@ -20,10 +24,10 @@ class GlobalInvenController extends GetxController {
   var isLoading = false.obs;
 
   //data barang yang difilter
-  var filterBarang = <AppBarang>[].obs;
+  var filterBarang = <Alat>[].obs;
 
-  //data seluruh barang dari API
-  var barang = <AppBarang>[].obs;
+  //data seluruh barang dari database
+  var barang = <Alat>[].obs;
 
   //timer untuk penunda eksekusi fungsi filter (combineFilter())
   Timer? _debounce;
@@ -33,20 +37,18 @@ class GlobalInvenController extends GetxController {
 
   @override
   void onInit() {
+    print('DEBUG: GlobalInvenController onInit called');
     super.onInit();
-    Future.microtask(() async { 
-      if (!_hasFetch) {
-        await fetchData();
-        _hasFetch = true;
-      }
-    });
+    // Don't fetch data immediately on init
+    // Data will be fetched when user logs in or when needed
+    print('DEBUG: GlobalInvenController initialized, waiting for user authentication');
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void onClose() {
     ctrlFilter.dispose();
     fcsFilter.dispose();
+    super.onClose();
   }
 
   Future<void> refresh() async {
@@ -62,27 +64,46 @@ class GlobalInvenController extends GetxController {
   }
 
   Future<void> fetchData({bool isRefresh = false}) async {
-    if (barang.isNotEmpty && !isRefresh) return;
+    print('DEBUG: GlobalInvenController fetchData called, isRefresh: $isRefresh');
+    if (barang.isNotEmpty && !isRefresh) {
+      print('DEBUG: GlobalInvenController data already exists, returning');
+      return;
+    }
+
+    // Check if user is authenticated
+    final authService = AuthService();
+    if (!authService.isLoggedIn) {
+      print('DEBUG: User not authenticated, skipping data fetch');
+      return;
+    }
 
     try {
+      print('DEBUG: GlobalInvenController starting data fetch');
       isLoading.value = true;
 
-      List<AppBarang> item = await StaticServicesGet().dataBarang();
+      print('DEBUG: GlobalInvenController calling AlatService.getAllAlat()');
+      List<Alat> item = await _alatService.getAllAlat();
+      print('DEBUG: GlobalInvenController getAllAlat returned ${item.length} items');
 
       barang.assignAll(item);
+      print('DEBUG: GlobalInvenController barang assigned');
 
       filterBarang.assignAll(item);
+      print('DEBUG: GlobalInvenController filterBarang assigned');
 
       opsiFilter.value = {
         0: "|||",
-        for (var barang in item)
-          if (barang.kategori != null)
-            barang.kategori!.id: barang.kategori!.kategori,
+        for (var alat in item)
+          if (alat.kategori != null)
+            alat.kategori!.id: alat.kategori!.nama,
       };
+      print('DEBUG: GlobalInvenController opsiFilter assigned');
     } catch (e) {
+      print('DEBUG: GlobalInvenController fetchData error: $e');
       print(e);
-      Get.snackbar('error', 'Terjadi kesalahan');
+      Get.snackbar('error', 'Terjadi kesalahan: $e');
     } finally {
+      print('DEBUG: GlobalInvenController fetchData finished');
       isLoading.value = false;
     }
   }
@@ -97,30 +118,28 @@ class GlobalInvenController extends GetxController {
 
     ///mengambil seluruh data barang (semua data barang tanpa filter)
     ///data barang nantinya akan difilter dengan berbagai kondisi
-    List<AppBarang> item = barang;
+    List<Alat> item = barang;
 
     ///tahap 1 filter barang
     ///tahap ini memfilter barang berdasarkam input pengguna (TextField)
     if (keyword.isNotEmpty) {
-      ///hanya mengembalikan data barang dengan bebearapa kondisi
-      item = item.where((barang) {
-        ///"barang.nmBarang" berdasarkan nama barang
-        return barang.nmBarang.toLowerCase().contains(keyword) ||
-            ///"barang.kategori!.kategori" berdasarkan kategori barang
-            ///"barang.kategori!.kategori" -> AppBarang -> AppKategori == kategori
-            barang.kategori!.kategori.toLowerCase().contains(keyword) ||
-            ///"barang.jenis!.jenis" berdasarkan jenis barang
-            ///"barang.jenis!.jenis" -> Appbarang -> AppJenis == jenis
-            barang.jenis!.jenis.toLowerCase().contains(keyword);
+      ///hanya mengembalikan data barang dengan beberapa kondisi
+      item = item.where((alat) {
+        ///"alat.nama" berdasarkan nama alat
+        return alat.nama.toLowerCase().contains(keyword) ||
+            ///"alat.kategori!.nama" berdasarkan kategori alat
+            (alat.kategori?.nama.toLowerCase().contains(keyword) ?? false) ||
+            ///"alat.kodeAlat" berdasarkan kode alat
+            (alat.kodeAlat?.toLowerCase().contains(keyword) ?? false);
       }).toList();
     }
 
     ///tahap 2 filter barang
     ///tahap ini memfilter barang berdasarkan pilihan pengguna (CustomFilterChips)
     if (select != 0) {
-      ///hanya mengembalikan data barang dengan 1 kondisi (by id_kategori)
-      item = item.where((barang) {
-        return barang.kategoriId == select;
+      ///hanya mengembalikan data barang dengan 1 kondisi (by kategori_id)
+      item = item.where((alat) {
+        return alat.kategoriId == select;
       }).toList();
     }
 
@@ -129,7 +148,7 @@ class GlobalInvenController extends GetxController {
     filterBarang.assignAll(item);
   }
 
-  ///funsgi untuk stop filter pencarian by input (TextField)
+  ///fungsi untuk stop filter pencarian by input (TextField)
   void filterData(String query) {
     ///_debounce?.isActive ?? false maksudnya
     ///Kalau _debounce ada dan aktif -> true
@@ -142,5 +161,41 @@ class GlobalInvenController extends GetxController {
       ///kalau 300ms lewat combineFilter(); bakal dieksekusi
       combineFilter();
     });
+  }
+
+  // Method untuk mencari alat berdasarkan nama
+  Future<List<Alat>> searchAlat(String searchTerm) async {
+    try {
+      return await _alatService.searchAlat(searchTerm);
+    } catch (e) {
+      print('ERROR SEARCH ALAT: $e');
+      return [];
+    }
+  }
+
+  // Method untuk mendapatkan alat berdasarkan kategori
+  Future<List<Alat>> getAlatByKategori(int kategoriId) async {
+    try {
+      return await _alatService.getAlatByKategori(kategoriId);
+    } catch (e) {
+      print('ERROR GET ALAT BY KATEGORI: $e');
+      return [];
+    }
+  }
+
+  // Method untuk mendapatkan opsi kategori
+  Future<List<Map<String, dynamic>>> getKategoriOptions() async {
+    try {
+      final kategoriList = await _alatService.getKategoriOptions();
+      return kategoriList
+          .map((kategori) => {
+                'id': kategori.id,
+                'nama': kategori.nama,
+              })
+          .toList();
+    } catch (e) {
+      print('ERROR GET KATEGORI OPTIONS: $e');
+      return [];
+    }
   }
 }

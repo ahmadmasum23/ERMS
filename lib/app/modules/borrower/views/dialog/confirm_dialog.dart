@@ -28,7 +28,7 @@ class ConfirmDialog extends GetView<BorrowerController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Semua benar?',
+                  'Konfirmasi Pengajuan',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
 
@@ -38,6 +38,31 @@ class ConfirmDialog extends GetView<BorrowerController> {
                   icon: Icon(Icons.close, color: Colors.red.shade900),
                 ),
               ],
+            ),
+            
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 15),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                border: Border.all(color: Colors.orange.shade200),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, color: Colors.orange.shade700, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Pastikan semua data sudah benar sebelum mengajukan peminjaman',
+                      style: TextStyle(
+                        color: Colors.orange.shade800,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             Text(
@@ -64,7 +89,7 @@ class ConfirmDialog extends GetView<BorrowerController> {
             const SizedBox(height: 15),
 
             Text(
-              'Detail peminjaman',
+              'Detail peminjaman (${controller.slctItemId.length} alat dipilih)',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
@@ -83,11 +108,11 @@ class ConfirmDialog extends GetView<BorrowerController> {
             const SizedBox(height: 10),
 
             CustomBtnForm(
-              label: 'ajukan',
+              label: 'Ajukan Peminjaman',
               isLoading: controller.isBtnLoad.value,
               OnPress: () {
-                Get.back();
-                controller.pengajuan();
+                Get.back(); // Tutup dialog
+                controller.pengajuan(); // Proses pengajuan
               },
             ),
           ],

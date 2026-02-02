@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/models/AppKategori.dart';
+import '../../../data/models/KategoriAlat.dart';
 import '../../../data/services/kategori_service.dart';
 
 class AdminKategoriController extends GetxController {
   final KategoriService _kategoriService = KategoriService();
 
-  var kategoriList = <AppKategori>[].obs;
+  var kategoriList = <KategoriAlat>[].obs;
   var isLoading = false.obs;
   var alatCountMap = <int, int>{}.obs;
 

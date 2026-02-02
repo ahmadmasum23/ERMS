@@ -7,25 +7,64 @@ class DialogBarang extends GetView<BorrowerController> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: TextEditingController(text: controller.selectedItem ?? '-'),
-      readOnly: true,
-      enabled: false,
-      maxLines: null,
-      style: TextStyle(color: Colors.grey.shade900, fontSize: 12),
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.archive, color: Colors.grey.shade900),
-        label: Text('Nama barang'),
-        labelStyle: TextStyle(
-          color: Colors.grey.shade900,
-          fontWeight: FontWeight.w600,
-        ),
-        isDense: true,
-        disabledBorder: OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 15,
-          horizontal: 10,
-        ),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(4),
+        color: Colors.grey.shade50,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.inventory, color: Colors.grey.shade700, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Alat yang Dipilih (${controller.slctItemId.length}):',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (controller.slctItemId.isEmpty)
+            Text(
+              'Belum ada alat yang dipilih',
+              style: TextStyle(color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+            )
+          else
+            ...controller.slctItemId.map((id) {
+              final item = controller.itemList.firstWhereOrNull((item) => item.id == id);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check, size: 12, color: Colors.blue.shade700),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        item?.nama ?? 'Alat tidak ditemukan',
+                        style: TextStyle(
+                          color: Colors.blue.shade800,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+        ],
       ),
     );
   }

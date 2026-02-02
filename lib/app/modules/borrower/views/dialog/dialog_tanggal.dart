@@ -41,9 +41,13 @@ class DialogTanggal extends GetView<BorrowerController> {
                       ),
                     ),
                     Text(
-                      Formatter.dateID(controller.tglPinjam.toString()),
+                      controller.tglPinjam.value != null
+                          ? Formatter.dateID(controller.tglPinjam.toString())
+                          : 'Belum dipilih',
                       style: TextStyle(
-                        color: Colors.grey.shade50,
+                        color: controller.tglPinjam.value != null
+                            ? Colors.grey.shade50
+                            : Colors.grey.shade300,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -88,9 +92,13 @@ class DialogTanggal extends GetView<BorrowerController> {
                       ),
                     ),
                     Text(
-                      Formatter.dateID(controller.tglKembali.toString()),
+                      controller.tglKembali.value != null
+                          ? Formatter.dateID(controller.tglKembali.toString())
+                          : 'Belum dipilih',
                       style: TextStyle(
-                        color: Colors.grey.shade50,
+                        color: controller.tglKembali.value != null
+                            ? Colors.grey.shade50
+                            : Colors.grey.shade300,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),

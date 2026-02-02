@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inven/app/modules/login/views/loginCtrl.dart';
-import 'package:inven/app/modules/login/views/loginToRegis.dart';
 
 class LoginView extends StatelessWidget {
   final formKey = GlobalKey<FormState>();
@@ -29,10 +28,6 @@ class LoginView extends StatelessWidget {
                 key: formKey,
                 child: LoginCtrl(formKey: formKey),
               ),
-
-              const SizedBox(height: 40),
-
-              LoginToRegis(),
             ],
           ),
         ),

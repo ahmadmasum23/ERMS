@@ -1,4 +1,8 @@
-class AppPengajuan {
+import 'ProfilPengguna.dart';
+import 'package:inven/app/data/models/DetailPeminjaman.dart';
+import 'AppPengajuan.dart';
+
+class Peminjaman {
   final int id;
   final String peminjamId;
   final String? disetujuiOleh;
@@ -9,8 +13,12 @@ class AppPengajuan {
   final int hariTerlambat;
   final String? alasan;
   final DateTime? dibuatPada;
+  
+  // Relations
+  final ProfilPengguna? peminjam;
+  final ProfilPengguna? petugas;
 
-  AppPengajuan({
+  Peminjaman({
     required this.id,
     required this.peminjamId,
     this.disetujuiOleh,
@@ -21,6 +29,8 @@ class AppPengajuan {
     this.hariTerlambat = 0,
     this.alasan,
     this.dibuatPada,
+    this.peminjam,
+    this.petugas,
   });
 
   Map<String, dynamic> toJson() {
@@ -38,8 +48,8 @@ class AppPengajuan {
     };
   }
 
-  factory AppPengajuan.fromJson(Map<String, dynamic> json) {
-    return AppPengajuan(
+  factory Peminjaman.fromJson(Map<String, dynamic> json) {
+    return Peminjaman(
       id: int.parse(json['id'].toString()),
       peminjamId: json['peminjam_id'] ?? '',
       disetujuiOleh: json['disetujui_oleh'],
@@ -54,6 +64,27 @@ class AppPengajuan {
       dibuatPada: json['dibuat_pada'] != null
           ? DateTime.parse(json['dibuat_pada'])
           : null,
+      peminjam: json['peminjam'] != null
+          ? ProfilPengguna.fromJson(json['peminjam'])
+          : null,
+      petugas: json['petugas'] != null
+          ? ProfilPengguna.fromJson(json['petugas'])
+          : null,
+    );
+  }
+
+  AppPengajuan toAppPengajuan() {
+    return AppPengajuan(
+      id: this.id,
+      peminjamId: this.peminjamId,
+      disetujuiOleh: this.disetujuiOleh,
+      tanggalPinjam: this.tanggalPinjam,
+      tanggalJatuhTempo: this.tanggalJatuhTempo,
+      tanggalKembali: this.tanggalKembali,
+      status: this.status,
+      hariTerlambat: this.hariTerlambat,
+      alasan: this.alasan,
+      dibuatPada: this.dibuatPada,
     );
   }
 }

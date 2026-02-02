@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppPengajuan.dart';
+import 'package:inven/app/data/models/Peminjaman.dart';
 import 'package:inven/app/modules/operator/controllers/operator_controller.dart';
-import 'package:inven/app/modules/operator/views/pemrosesan/PemrosesanData.dart';
 import 'package:inven/app/modules/borrower/views/riwayat/RiwayatTable.dart';
 
 class PemrosesanBody extends GetView<OperatorController> {
-  final AppPengajuan model;
+  final Peminjaman model;
 
   const PemrosesanBody({required this.model, super.key});
 
@@ -33,20 +32,13 @@ class PemrosesanBody extends GetView<OperatorController> {
                 color: const Color(0xffF4F7F7),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: PemrosesanData(
-                itemId: model.id,
-                expand: isExpanded,
-                model: model,
-                bttn: () {
-                  controller.expandB.value = isExpanded ? '' : id;
-                },
-              ),
+            
             ),
 
             if (isExpanded) ...[
               const SizedBox(height: 10),
 
-              RiwayatTable(model: model),
+              RiwayatTable(model: model.toAppPengajuan()),
             ],
           ],
         ),

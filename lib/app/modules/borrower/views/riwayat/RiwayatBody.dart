@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/state_manager.dart';
 import 'package:inven/app/data/models/AppPengajuan.dart';
 import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
-import 'package:inven/app/modules/borrower/views/riwayat/RiwayatData.dart';
+
 import 'package:inven/app/modules/borrower/views/riwayat/RiwayatTable.dart';
 
 class RiwayatBody extends GetView<BorrowerController> {
@@ -34,14 +34,7 @@ class RiwayatBody extends GetView<BorrowerController> {
                 color: const Color(0xffF4F7F7),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: RiwayatData(
-                idItem: model.id,
-                expand: isExpand,
-                model: model,
-                bttn: () {
-                  controller.expandR.value = isExpand ? '' : id;
-                },
-              ),
+              
             ),
 
             if (isExpand) ...[

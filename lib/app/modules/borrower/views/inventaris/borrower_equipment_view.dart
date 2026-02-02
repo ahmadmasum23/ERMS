@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppAlat.dart';
+import 'package:inven/app/data/models/Alat.dart';
 import 'package:inven/app/data/services/alat_service.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/global/widgets/CustomFilterChips.dart';
@@ -17,8 +17,8 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
   final AlatService _alatService = AlatService();
   final TextEditingController _searchController = TextEditingController();
 
-  var equipments = <AppAlat>[].obs;
-  var filteredEquipments = <AppAlat>[].obs;
+  var equipments = <Alat>[].obs;
+  var filteredEquipments = <Alat>[].obs;
   var isLoading = false.obs;
   var selectedCategoryIndex = 0.obs; // Use int index instead of String
 
@@ -66,7 +66,7 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
   }
 
   void _applyFilters() {
-    List<AppAlat> filtered = List.from(equipments);
+    List<Alat> filtered = List.from(equipments);
 
     // Apply search filter
     if (_searchController.text.isNotEmpty) {
@@ -204,7 +204,7 @@ class _BorrowerEquipmentViewState extends State<BorrowerEquipmentView> {
     );
   }
 
-  Widget _buildEquipmentCard(AppAlat equipment) {
+  Widget _buildEquipmentCard(Alat equipment) {
   return Container(
     padding: const EdgeInsets.all(10), // border luar
     decoration: BoxDecoration(

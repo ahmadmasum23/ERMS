@@ -104,6 +104,8 @@ create table log_aktivitas (
 -- ROW LEVEL SECURITY (RLS)
 -- =========================
 alter table peminjaman enable row level security;
+alter table alat enable row level security;
+alter table kategori_alat enable row level security;
 
 create policy "peminjam hanya bisa insert miliknya"
 on peminjaman
@@ -124,6 +126,66 @@ using (
     from profil_pengguna
     where id = auth.uid()
     and peran = 'petugas'
+  )
+);
+
+-- Policies for alat table
+create policy "semua pengguna bisa lihat alat"
+on alat
+for select
+using (true);
+
+create policy "admin dan petugas bisa insert alat"
+on alat
+for insert
+with check (
+  exists (
+    select 1
+    from profil_pengguna
+    where id = auth.uid()
+    and peran in ('admin', 'petugas')
+  )
+);
+
+create policy "admin dan petugas bisa update alat"
+on alat
+for update
+using (
+  exists (
+    select 1
+    from profil_pengguna
+    where id = auth.uid()
+    and peran in ('admin', 'petugas')
+  )
+);
+
+create policy "admin dan petugas bisa delete alat"
+on alat
+for delete
+using (
+  exists (
+    select 1
+    from profil_pengguna
+    where id = auth.uid()
+    and peran in ('admin', 'petugas')
+  )
+);
+
+-- Policies for kategori_alat table
+create policy "semua pengguna bisa lihat kategori"
+on kategori_alat
+for select
+using (true);
+
+create policy "admin dan petugas bisa manage kategori"
+on kategori_alat
+for all
+using (
+  exists (
+    select 1
+    from profil_pengguna
+    where id = auth.uid()
+    and peran in ('admin', 'petugas')
   )
 );
 

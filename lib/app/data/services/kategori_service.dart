@@ -1,42 +1,41 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_service.dart';
-import '../models/AppKategori.dart';
+import '../models/KategoriAlat.dart';
 
 class KategoriService {
   final SupabaseClient _supabase = AuthService().client;
 
-  Future<List<AppKategori>> getAllKategori() async {
+  Future<List<KategoriAlat>> getAllKategori() async {
     try {
       final response = await _supabase
           .from('kategori_alat')
           .select()
           .order('nama');
       
-      return response
-          .map((e) => AppKategori.fromJson(e))
-          .toList();
+      return response.map((e) => KategoriAlat.fromJson(e)).toList();
     } catch (e) {
       print("ERROR FETCH KATEGORI: $e");
       rethrow;
     }
   }
 
-  Future<AppKategori?> getKategoriById(int id) async {
+  Future<KategoriAlat?> getKategoriById(int id) async {
     try {
       final response = await _supabase
           .from('kategori_alat')
           .select()
           .eq('id', id)
-          .single();
+          .limit(1);
       
-      return AppKategori.fromJson(response);
+      if (response.isEmpty) return null;
+      return KategoriAlat.fromJson(response.first);
     } catch (e) {
       print("ERROR FETCH KATEGORI BY ID: $e");
       return null;
     }
   }
 
-  Future<AppKategori> createKategori({
+  Future<KategoriAlat> createKategori({
     required String kode,
     required String nama,
   }) async {
@@ -48,9 +47,10 @@ class KategoriService {
             'nama': nama,
           })
           .select()
-          .single();
+          .limit(1);
       
-      return AppKategori.fromJson(response);
+      if (response.isEmpty) throw Exception('Failed to create kategori');
+      return KategoriAlat.fromJson(response.first);
     } catch (e) {
       print("ERROR CREATE KATEGORI: $e");
       rethrow;

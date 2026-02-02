@@ -13,7 +13,7 @@ class OperatorProfileView extends GetView<OperatorController> {
         children: [
           CustomAppbar(
             title: 'Profile',
-            boldTitle: controller.userData?.nama ?? '',
+            boldTitle: controller.userData?.namaLengkap ?? '',
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -57,7 +57,7 @@ class OperatorProfileView extends GetView<OperatorController> {
                         children: [
                           _infoRow(
                             'Full Name',
-                            controller.userData?.nama ?? '-',
+                            controller.userData?.namaLengkap ?? '-',
                           ),
                           const Divider(height: 24),
                           _infoRow(

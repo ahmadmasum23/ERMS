@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/services/database_service_provider.dart';
+import 'package:inven/app/global/controllers/global_inven_controller.dart';
 import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/routes/app_pages.dart';
 
@@ -61,7 +62,7 @@ class LoginController extends GetxController {
         // Tampilkan snackbar sukses yang lebih baik
         Get.snackbar(
           '✓ Berhasil',
-          'Selamat datang kembali!',
+          'Selamat datang kembali, ${data.namaLengkap}!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -70,16 +71,25 @@ class LoginController extends GetxController {
           duration: const Duration(seconds: 2),
         );
 
+        // Fetch inventory data after successful login
+        try {
+          final invenController = Get.find<GlobalInvenController>();
+          await invenController.fetchData();
+          print('DEBUG: Inventory data fetched after login');
+        } catch (e) {
+          print('DEBUG: Could not fetch inventory data: $e');
+        }
+
         await Future.delayed(const Duration(milliseconds: 800));
 
-        switch (data.peranId) {
-          case 1:
+        switch (data.peran) {
+          case 'admin':
             Get.offAllNamed(Routes.ADMIN);
             break;
-          case 2:
+          case 'petugas':
             Get.offAllNamed(Routes.OPERATOR);
             break;
-          case 3:
+          case 'peminjam':
             Get.offAllNamed(Routes.BORROWER);
             break;
           default:

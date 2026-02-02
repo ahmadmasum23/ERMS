@@ -1,176 +1,126 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:inven/app/data/models/AppLogAktivitas.dart';
 import 'auth_service.dart';
+import '../models/LogAktivitas.dart';
 
 class LogAktivitasService {
   final SupabaseClient _supabase = AuthService().client;
 
-  /// Fetch all activity logs with user details
-  Future<List<AppLogAktivitas>> getAllLogs() async {
+  Future<List<LogAktivitas>> getAllLogs() async {
     try {
-      // Try the join query first
-      List response;
-      try {
-        response = await _supabase
-            .from('log_aktivitas')
-            .select('*, profil_pengguna!inner(nama_lengkap, peran)')
-            .order('dibuat_pada', ascending: false)
-            .limit(100);
-      } catch (e) {
-        print("INNER JOIN query failed, falling back to separate queries: $e");
-        // Fallback: fetch logs and user details separately
-        response = await _supabase
-            .from('log_aktivitas')
-            .select('*')
-            .order('dibuat_pada', ascending: false)
-            .limit(100);
-      }
-
-      // Process the response
-      List<AppLogAktivitas> logs = [];
+      final response = await _supabase
+          .from('log_aktivitas')
+          .select('*')
+          .order('dibuat_pada', ascending: false);
       
-      if (response.isNotEmpty) {
-        for (var item in response) {
-          Map<String, dynamic> processedItem = Map<String, dynamic>.from(item);
-          
-          // If the item contains profil_pengguna (from join), flatten it
-          if (processedItem.containsKey('profil_pengguna')) {
-            var profilData = processedItem['profil_pengguna'];
-            if (profilData != null && profilData is Map<String, dynamic>) {
-              processedItem['nama_lengkap'] = profilData['nama_lengkap'];
-              processedItem['peran'] = profilData['peran'];
-            }
-          }
-          
-          logs.add(AppLogAktivitas.fromJson(processedItem));
-        }
-      }
-      
-      return logs;
+      return response.map((e) => LogAktivitas.fromJson(e)).toList();
     } catch (e) {
-      print("ERROR FETCH LOG AKTIVITAS: $e");
+      print("ERROR FETCH ALL LOGS: $e");
       rethrow;
     }
   }
 
-  /// Insert a new activity log
-  Future<void> insertLog({
+  Future<List<LogAktivitas>> getLogsByUser(String userId) async {
+    try {
+      final response = await _supabase
+          .from('log_aktivitas')
+          .select('*')
+          .eq('pengguna_id', userId)
+          .order('dibuat_pada', ascending: false);
+      
+      return response.map((e) => LogAktivitas.fromJson(e)).toList();
+    } catch (e) {
+      print("ERROR FETCH LOGS BY USER: $e");
+      rethrow;
+    }
+  }
+
+  Future<List<LogAktivitas>> getLogsByEntity(String entitas) async {
+    try {
+      final response = await _supabase
+          .from('log_aktivitas')
+          .select('*')
+          .eq('entitas', entitas)
+          .order('dibuat_pada', ascending: false);
+      
+      return response.map((e) => LogAktivitas.fromJson(e)).toList();
+    } catch (e) {
+      print("ERROR FETCH LOGS BY ENTITY: $e");
+      rethrow;
+    }
+  }
+
+  Future<LogAktivitas> createLog({
+    String? penggunaId,
     required String aksi,
     required String entitas,
-    String? penggunaId,
     int? entitasId,
     Map<String, dynamic>? nilaiLama,
     Map<String, dynamic>? nilaiBaru,
+    String? namaPengguna,
+    String? peranPengguna,
+    List<String>? kolomDiubah,
   }) async {
     try {
-      // If no user ID provided, use current authenticated user
-      final userId = penggunaId ?? _supabase.auth.currentUser?.id;
-
-      await _supabase.from('log_aktivitas').insert({
-        'pengguna_id': userId,
-        'aksi': aksi,
-        'entitas': entitas,
-        'entitas_id': entitasId,
-        'nilai_lama': nilaiLama,
-        'nilai_baru': nilaiBaru,
-      });
-    } catch (e) {
-      print("ERROR INSERT LOG AKTIVITAS: $e");
-      // Don't rethrow to prevent app crashes on logging failures
-    }
-  }
-
-  /// Get logs for a specific user
-  Future<List<AppLogAktivitas>> getLogsByUser(String userId) async {
-    try {
-      List response;
-      try {
-        response = await _supabase
-            .from('log_aktivitas')
-            .select('*, profil_pengguna!inner(nama_lengkap, peran)')
-            .eq('pengguna_id', userId)
-            .order('dibuat_pada', ascending: false);
-      } catch (e) {
-        print("INNER JOIN query failed for getLogsByUser: $e");
-        response = await _supabase
-            .from('log_aktivitas')
-            .select('*')
-            .eq('pengguna_id', userId)
-            .order('dibuat_pada', ascending: false);
-      }
-
-      // Process the response
-      List<AppLogAktivitas> logs = [];
+      final response = await _supabase
+          .from('log_aktivitas')
+          .insert({
+            'pengguna_id': penggunaId,
+            'aksi': aksi,
+            'entitas': entitas,
+            'entitas_id': entitasId,
+            'nilai_lama': nilaiLama,
+            'nilai_baru': nilaiBaru,
+            'nama_pengguna': namaPengguna,
+            'peran_pengguna': peranPengguna,
+            'kolom_diubah': kolomDiubah,
+          })
+          .select('*')
+          .limit(1);
       
-      if (response.isNotEmpty) {
-        for (var item in response) {
-          Map<String, dynamic> processedItem = Map<String, dynamic>.from(item);
-          
-          // If the item contains profil_pengguna (from join), flatten it
-          if (processedItem.containsKey('profil_pengguna')) {
-            var profilData = processedItem['profil_pengguna'];
-            if (profilData != null && profilData is Map<String, dynamic>) {
-              processedItem['nama_lengkap'] = profilData['nama_lengkap'];
-              processedItem['peran'] = profilData['peran'];
-            }
-          }
-          
-          logs.add(AppLogAktivitas.fromJson(processedItem));
-        }
-      }
-      
-      return logs;
+      if (response.isEmpty) throw Exception('Failed to create log');
+      return LogAktivitas.fromJson(response.first);
     } catch (e) {
-      print("ERROR FETCH USER LOGS: $e");
+      print("ERROR CREATE LOG: $e");
       rethrow;
     }
   }
 
-  /// Get logs for a specific entity
-  Future<List<AppLogAktivitas>> getLogsByEntity(String entitas, int entitasId) async {
-    try {
-      List response;
-      try {
-        response = await _supabase
-            .from('log_aktivitas')
-            .select('*, profil_pengguna!inner(nama_lengkap, peran)')
-            .eq('entitas', entitas)
-            .eq('entitas_id', entitasId)
-            .order('dibuat_pada', ascending: false);
-      } catch (e) {
-        print("INNER JOIN query failed for getLogsByEntity: $e");
-        response = await _supabase
-            .from('log_aktivitas')
-            .select('*')
-            .eq('entitas', entitas)
-            .eq('entitas_id', entitasId)
-            .order('dibuat_pada', ascending: false);
-      }
+  // Alias for createLog
+  Future<LogAktivitas> insertLog({
+    String? penggunaId,
+    required String aksi,
+    required String entitas,
+    int? entitasId,
+    Map<String, dynamic>? nilaiLama,
+    Map<String, dynamic>? nilaiBaru,
+    String? namaPengguna,
+    String? peranPengguna,
+    List<String>? kolomDiubah,
+  }) async {
+    return createLog(
+      penggunaId: penggunaId,
+      aksi: aksi,
+      entitas: entitas,
+      entitasId: entitasId,
+      nilaiLama: nilaiLama,
+      nilaiBaru: nilaiBaru,
+      namaPengguna: namaPengguna,
+      peranPengguna: peranPengguna,
+      kolomDiubah: kolomDiubah,
+    );
+  }
 
-      // Process the response
-      List<AppLogAktivitas> logs = [];
+  Future<bool> deleteLog(int id) async {
+    try {
+      await _supabase
+          .from('log_aktivitas')
+          .delete()
+          .eq('id', id);
       
-      if (response.isNotEmpty) {
-        for (var item in response) {
-          Map<String, dynamic> processedItem = Map<String, dynamic>.from(item);
-          
-          // If the item contains profil_pengguna (from join), flatten it
-          if (processedItem.containsKey('profil_pengguna')) {
-            var profilData = processedItem['profil_pengguna'];
-            if (profilData != null && profilData is Map<String, dynamic>) {
-              processedItem['nama_lengkap'] = profilData['nama_lengkap'];
-              processedItem['peran'] = profilData['peran'];
-            }
-          }
-          
-          logs.add(AppLogAktivitas.fromJson(processedItem));
-        }
-      }
-      
-      return logs;
+      return true;
     } catch (e) {
-      print("ERROR FETCH ENTITY LOGS: $e");
-      rethrow;
+      print("ERROR DELETE LOG: $e");
+      return false;
     }
   }
 }

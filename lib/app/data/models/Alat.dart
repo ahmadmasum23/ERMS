@@ -1,6 +1,6 @@
-import 'AppKategori.dart';
+import 'KategoriAlat.dart';
 
-class AppAlat {
+class Alat {
   final int id;
   final String nama;
   final int? kategoriId;
@@ -11,10 +11,10 @@ class AppAlat {
   final String? kodeAlat;
   final String status; // 'tersedia', 'dipinjam', 'tidak_layak'
   
-  // Relation
-  final AppKategori? kategori;
+  // Relations
+  final KategoriAlat? kategori;
 
-  AppAlat({
+  Alat({
     required this.id,
     required this.nama,
     this.kategoriId,
@@ -41,9 +41,9 @@ class AppAlat {
     };
   }
 
-  factory AppAlat.fromJson(Map<String, dynamic> json) {
-    return AppAlat(
-      id: int.tryParse(json['id'].toString()) ?? 0,
+  factory Alat.fromJson(Map<String, dynamic> json) {
+    return Alat(
+      id: int.parse(json['id'].toString()),
       nama: json['nama'] ?? '',
       kategoriId: json['kategori_id'] is int 
           ? json['kategori_id'] 
@@ -53,11 +53,11 @@ class AppAlat {
       dibuatPada: json['dibuat_pada'] != null
           ? DateTime.parse(json['dibuat_pada'])
           : null,
-      stok: int.tryParse(json['stok'].toString()) ?? 1,
+      stok: int.parse(json['stok'].toString()),
       kodeAlat: json['kode_alat'],
       status: json['status'] ?? 'tersedia',
       kategori: json['kategori'] != null
-          ? AppKategori.fromJson(json['kategori'])
+          ? KategoriAlat.fromJson(json['kategori'])
           : null,
     );
   }

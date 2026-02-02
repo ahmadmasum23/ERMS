@@ -3,7 +3,7 @@ import 'package:get/state_manager.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/global/widgets/CustomFilterChips.dart';
 import 'package:inven/app/modules/operator/controllers/operator_controller.dart';
-import 'package:inven/app/modules/operator/views/riwayat/op_riwayat_body.dart';
+
 
 class OpRiwayatPanel extends GetView<OperatorController> {
   const OpRiwayatPanel({super.key});
@@ -60,7 +60,7 @@ class OpRiwayatPanel extends GetView<OperatorController> {
                 itemBuilder: (context, index) {
                   final item = controller.riwayatFilter[index];
 
-                  return OpRiwayatBody(model: item);
+                 
                 },
                 separatorBuilder: (context, index) => const SizedBox(),
                 itemCount: controller.riwayatFilter.length,

@@ -5,6 +5,7 @@ import 'package:inven/app/global/widgets/CustomTxtForm.dart';
 import 'package:inven/app/modules/operator/controllers/operator_controller.dart';
 import 'package:inven/app/modules/operator/views/persetujuan/PersetujuanBody.dart';
 
+
 class PersetujuanPanel extends GetView<OperatorController> {
   const PersetujuanPanel({super.key});
 
@@ -37,21 +38,44 @@ class PersetujuanPanel extends GetView<OperatorController> {
                 return Center(child: CircularProgressIndicator());
               }
 
-              if (controller.pengajuan.isEmpty) {
-                return Center(child: Text('belum ada pengajuan barang'));
+              // Filter for pending applications (status = 'menunggu')
+              final pendingApplications = controller.pengajuan
+                  .where((p) => p.status == 'menunggu')
+                  .toList();
+              
+              if (pendingApplications.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inbox_outlined,
+                        size: 60,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Belum ada pengajuan yang menunggu persetujuan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               return ListView.separated(
                 padding: const EdgeInsets.all(0),
                 itemBuilder: (context, index) {
-                  final item = controller.pengajuan[index];
-
+                  final item = pendingApplications[index];
                   return PersetujuanBody(model: item);
                 },
                 separatorBuilder: (context, index) {
-                  return const SizedBox(height: 0);
+                  return const SizedBox(height: 10);
                 },
-                itemCount: controller.pengajuan.length,
+                itemCount: pendingApplications.length,
               );
             }),
           ),

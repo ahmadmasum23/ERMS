@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart'; // Tambahkan import ini
-import 'package:inven/app/data/models/AppAlat.dart';
+import 'package:inven/app/data/models/Alat.dart';
 import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
 
 class DataAlatNew extends StatelessWidget {
-  final AppAlat model;
+  final Alat model;
 
   const DataAlatNew({required this.model, super.key});
 
@@ -384,7 +384,7 @@ class DataAlatNew extends StatelessWidget {
       // Debug: Cek status user
       print('DEBUG: currentUser = $currentUser');
       if (currentUser != null) {
-        print('DEBUG: currentUser.peranId = ${currentUser.peranId}');
+        print('DEBUG: currentUser.peran = ${currentUser.peran}');
       }
 
       if (currentUser == null) {
@@ -398,11 +398,11 @@ class DataAlatNew extends StatelessWidget {
         );
       }
 
-      if (currentUser.peranId != 1) {
+      if (!currentUser.isAdmin) {
         // Untuk debugging: tampilkan role user
-        final roleText = currentUser.peranId == 2
+        final roleText = currentUser.isPetugas
             ? 'Operator'
-            : currentUser.peranId == 3
+            : currentUser.isPeminjam
             ? 'Peminjam'
             : 'User';
         return Container(
@@ -414,7 +414,7 @@ class DataAlatNew extends StatelessWidget {
         );
       }
 
-      // Hanya tampilkan tombol untuk admin (peranId == 1)
+      // Hanya tampilkan tombol untuk admin (isAdmin)
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -594,7 +594,7 @@ class DataAlatNew extends StatelessWidget {
     }
   }
 
-  void _showEditDialog(BuildContext context, AppAlat alat) {
+  void _showEditDialog(BuildContext context, Alat alat) {
     final namaController = TextEditingController(text: alat.nama);
     final stokController = TextEditingController(text: alat.stok.toString());
     final urlGambarController = TextEditingController(
@@ -784,7 +784,7 @@ class DataAlatNew extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, AppAlat alat) {
+  void _confirmDelete(BuildContext context, Alat alat) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

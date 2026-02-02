@@ -6,7 +6,6 @@ abstract class Routes {
   static const BORROWER = _Paths.BORROWER;
   static const ADMIN = _Paths.ADMIN;
   static const LOGIN = _Paths.LOGIN;
-  static const REGISTER = _Paths.REGISTER;
 }
 
 abstract class _Paths {
@@ -15,5 +14,4 @@ abstract class _Paths {
   static const BORROWER = '/borrower';
   static const ADMIN = '/admin';
   static const LOGIN = '/login';
-  static const REGISTER = '/register';
 }

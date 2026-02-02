@@ -8,7 +8,7 @@ class DialogPemohon extends GetView<BorrowerController> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: TextEditingController(text: controller.ctrlPemohon.text),
+      controller: controller.ctrlPemohon,
       readOnly: true,
       enabled: false,
       maxLines: null,

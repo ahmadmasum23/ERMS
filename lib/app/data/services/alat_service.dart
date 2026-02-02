@@ -1,60 +1,81 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_service.dart';
-import '../models/AppAlat.dart';
-import '../models/AppKategori.dart';
+import '../models/Alat.dart';
+import '../models/KategoriAlat.dart';
 
 class AlatService {
   final SupabaseClient _supabase = AuthService().client;
 
-  Future<List<AppAlat>> getAllAlat() async {
+  // Debug method to check authentication status
+  void debugAuthStatus() {
+    final user = _supabase.auth.currentUser;
+    print('=== AUTH DEBUG ===');
+    print('Current user: ${user?.id}');
+    print('User email: ${user?.email}');
+    print('Is logged in: ${user != null}');
+    print('==================');
+  }
+
+  Future<List<Alat>> getAllAlat() async {
     try {
+      // Debug authentication first
+      debugAuthStatus();
+      
+      print('Attempting to fetch alat data from database...');
       final response = await _supabase
           .from('alat')
-          .select('*, kategori:kategori_id(*)')
+          .select('*, kategori:kategori_alat(*)')
           .order('nama');
       
-      return response
-          .map((e) => AppAlat.fromJson(e))
-          .toList();
+      print('Database query successful, got ${response.length} records');
+      print('First few items: ${response.take(3).map((e) => e['nama']).toList()}');
+      
+      final result = response.map((e) => Alat.fromJson(e)).toList();
+      print('Converted to ${result.length} Alat objects');
+      return result;
     } catch (e) {
       print("ERROR FETCH ALAT: $e");
+      print("Error type: ${e.runtimeType}");
+      if (e.toString().contains('Postgrest')) {
+        print("Postgrest error detected");
+        print("Error message: ${e.toString()}");
+      }
       rethrow;
     }
   }
 
-  Future<AppAlat?> getAlatById(int id) async {
+  Future<Alat?> getAlatById(int id) async {
     try {
       final response = await _supabase
           .from('alat')
-          .select('*, kategori:kategori_id(*)')
+          .select('*, kategori:kategori_alat(*)')
           .eq('id', id)
-          .single();
+          .limit(1);
       
-      return AppAlat.fromJson(response);
+      if (response.isEmpty) return null;
+      return Alat.fromJson(response.first);
     } catch (e) {
       print("ERROR FETCH ALAT BY ID: $e");
       return null;
     }
   }
 
-  Future<List<AppAlat>> getAlatByKategori(int kategoriId) async {
+  Future<List<Alat>> getAlatByKategori(int kategoriId) async {
     try {
       final response = await _supabase
           .from('alat')
-          .select('*, kategori:kategori_id(*)')
+          .select('*, kategori:kategori_alat(*)')
           .eq('kategori_id', kategoriId)
           .order('nama');
       
-      return response
-          .map((e) => AppAlat.fromJson(e))
-          .toList();
+      return response.map((e) => Alat.fromJson(e)).toList();
     } catch (e) {
       print("ERROR FETCH ALAT BY KATEGORI: $e");
       rethrow;
     }
   }
 
-  Future<AppAlat> createAlat({
+  Future<Alat> createAlat({
     required String nama,
     int? kategoriId,
     required String kondisi,
@@ -80,10 +101,11 @@ class AlatService {
       final response = await _supabase
           .from('alat')
           .insert(insertData)
-          .select('*, kategori:kategori_id(*)')
-          .single();
+          .select('*, kategori:kategori_alat(*)')
+          .limit(1);
       
-      return AppAlat.fromJson(response);
+      if (response.isEmpty) throw Exception('Failed to create alat');
+      return Alat.fromJson(response.first);
     } catch (e) {
       print("ERROR CREATE ALAT: $e");
       rethrow;
@@ -137,33 +159,29 @@ class AlatService {
     }
   }
 
-  Future<List<AppAlat>> searchAlat(String searchTerm) async {
+  Future<List<Alat>> searchAlat(String searchTerm) async {
     try {
       final response = await _supabase
           .from('alat')
-          .select('*, kategori:kategori_id(*)')
+          .select('*, kategori:kategori_alat(*)')
           .ilike('nama', '%$searchTerm%')
           .order('nama');
       
-      return response
-          .map((e) => AppAlat.fromJson(e))
-          .toList();
+      return response.map((e) => Alat.fromJson(e)).toList();
     } catch (e) {
       print("ERROR SEARCH ALAT: $e");
       rethrow;
     }
   }
 
-  Future<List<AppKategori>> getKategoriOptions() async {
+  Future<List<KategoriAlat>> getKategoriOptions() async {
     try {
       final response = await _supabase
           .from('kategori_alat')
           .select('*')
           .order('nama');
       
-      return response
-          .map((e) => AppKategori.fromJson(e))
-          .toList();
+      return response.map((e) => KategoriAlat.fromJson(e)).toList();
     } catch (e) {
       print("ERROR FETCH KATEGORI OPTIONS: $e");
       rethrow;

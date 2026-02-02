@@ -1,47 +1,45 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth_service.dart';
-import '../models/AppUser.dart';
+import '../models/ProfilPengguna.dart';
 
 class UserService {
   final SupabaseClient _supabase = AuthService().client;
 
-  Future<AppUser?> getProfile() async {
+  Future<ProfilPengguna?> getProfile() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
 
-    final data = await _supabase
+    final response = await _supabase
         .from('profil_pengguna')
         .select()
         .eq('id', userId)
-        .single();
+        .limit(1);
+    
+    if (response.isEmpty) return null;
+    final data = response.first;
 
-    int roleId = 3;
-    if (data['peran'] == 'admin') roleId = 1;
-    if (data['peran'] == 'petugas') roleId = 2;
-
-    return AppUser(
-      id: data['id'], 
-      peranId: roleId,
-      nama: data['nama_lengkap'],
-      email: '',
-      pass: '',
-    );
+    return ProfilPengguna.fromJson(data);
   }
 
   Future<void> insertProfile({
     required String userId,
-    required String nama,
+    required String namaLengkap,
     required String peran,
+    String? alamat,
+    String? nomorHp,
   }) async {
     await _supabase.from('profil_pengguna').insert({
       'id': userId,
-      'nama_lengkap': nama,
+      'nama_lengkap': namaLengkap,
       'peran': peran,
+      'alamat': alamat,
+      'nomor_hp': nomorHp,
     });
   }
 
-  Future<List<Map<String, dynamic>>> getAllUsers() async {
-    return await _supabase.from('profil_pengguna').select();
+  Future<List<ProfilPengguna>> getAllUsers() async {
+    final response = await _supabase.from('profil_pengguna').select();
+    return response.map((data) => ProfilPengguna.fromJson(data)).toList();
   }
 
   Future<void> updateUser(String id, Map<String, dynamic> data) async {

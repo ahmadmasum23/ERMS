@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:inven/app/data/models/AppAlat.dart';
+import 'package:inven/app/data/models/Alat.dart';
 import 'package:inven/app/modules/admin/views/alatM/data_alat_new.dart';
 
 class BodyAlatMNew extends StatelessWidget {
-  final AppAlat model;
+  final Alat model;
 
   const BodyAlatMNew({required this.model, super.key});
 

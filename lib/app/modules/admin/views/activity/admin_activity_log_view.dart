@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:inven/app/data/models/AppLogAktivitas.dart';
+import 'package:inven/app/data/models/LogAktivitas.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/global/widgets/CustomTxtForm.dart';
 import 'package:inven/app/modules/admin/controllers/admin_activity_log_controller.dart';
@@ -257,7 +257,7 @@ class AdminActivityLogView extends StatelessWidget {
     });
   }
 
-  Widget _buildActivityCard(BuildContext context, AppLogAktivitas log) {
+  Widget _buildActivityCard(BuildContext context, LogAktivitas log) {
     final isMobile = MediaQuery.of(context).size.width <= 600;
 
     return Container(
@@ -280,7 +280,7 @@ class AdminActivityLogView extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileCardContent(AppLogAktivitas log) {
+  Widget _buildMobileCardContent(LogAktivitas log) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -361,7 +361,7 @@ class AdminActivityLogView extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopCardContent(AppLogAktivitas log) {
+  Widget _buildDesktopCardContent(LogAktivitas log) {
     return Row(
       children: [
         Container(
@@ -448,7 +448,7 @@ class AdminActivityLogView extends StatelessWidget {
     );
   }
 
-  Widget _buildChangeDetails(AppLogAktivitas log) {
+  Widget _buildChangeDetails(LogAktivitas log) {
     if ((log.nilaiLama == null || log.nilaiLama!.isEmpty) && 
         (log.nilaiBaru == null || log.nilaiBaru!.isEmpty)) {
       return const SizedBox.shrink();

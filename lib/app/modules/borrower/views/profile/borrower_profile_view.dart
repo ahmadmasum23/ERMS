@@ -56,7 +56,7 @@ class BorrowerProfileView extends GetView<BorrowerController> {
               }
             },
             title: 'Hallo',
-            boldTitle: controller.userData?.nama ?? '',
+            boldTitle: controller.userData?.namaLengkap ?? '',
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -129,7 +129,7 @@ class BorrowerProfileView extends GetView<BorrowerController> {
   Widget _buildPersonalInfo() {
     return Column(
       children: [
-        _buildInfoRow('Full Name', controller.userData?.nama ?? '-'),
+        _buildInfoRow('Full Name', controller.userData?.namaLengkap ?? '-'),
         const Divider(height: 24),
         _buildInfoRow('Email', controller.userData?.email ?? '-'),
         const Divider(height: 24),

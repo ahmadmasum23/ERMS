@@ -8,7 +8,7 @@ class DialogInstansi extends GetView<BorrowerController> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: TextEditingController(text: controller.ctrlInstansi.text),
+      controller: controller.ctrlInstansi,
       readOnly: true,
       enabled: false,
       maxLines: null,

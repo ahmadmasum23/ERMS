@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
-import 'package:inven/app/data/models/AppKategori.dart';
+import 'package:inven/app/data/models/KategoriAlat.dart';
 import '../../controllers/admin_kategori_controller.dart';
 
 class AdminKategoriManagementView extends StatelessWidget {
@@ -132,7 +132,7 @@ class AdminKategoriManagementView extends StatelessWidget {
 
   Widget _buildCategoryCard({
   required BuildContext context,
-  required AppKategori kategori,
+  required KategoriAlat kategori,
   required int itemCount,
 }) {
   return Container(
@@ -293,7 +293,7 @@ class AdminKategoriManagementView extends StatelessWidget {
     );
   }
 
-  void _showEditKategoriDialog(BuildContext context, AppKategori kategori) {
+  void _showEditKategoriDialog(BuildContext context, KategoriAlat kategori) {
     final kodeController = TextEditingController(text: kategori.kode);
     final namaController = TextEditingController(text: kategori.nama);
     
@@ -342,7 +342,7 @@ class AdminKategoriManagementView extends StatelessWidget {
     );
   }
 
-  void _confirmDeleteKategori(BuildContext context, AppKategori kategori) {
+  void _confirmDeleteKategori(BuildContext context, KategoriAlat kategori) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
