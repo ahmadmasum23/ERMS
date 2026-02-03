@@ -163,6 +163,48 @@ class PemrosesanBody extends GetView<OperatorController> {
                           ),
                         ),
 
+                      // Beri Denda
+                      if (model.status.toLowerCase() == 'menunggu_pengembalian' || 
+                          model.status.toLowerCase() == 'dikembalikan')
+                        Container(
+                          margin: const EdgeInsets.only(right: 5),
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: controller.bttnLoad.value
+                                ? null
+                                : () => controller.showDendaDialog(
+                                    peminjamanId: model.id,
+                                    isApprove: true, // Separate denda application, not approval/rejection
+                                    model: model,
+                                  ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            child: controller.bttnLoad.value
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.attach_money, size: 16),
+                                      SizedBox(width: 5),
+                                      Text('Beri Denda'),
+                                    ],
+                                  ),
+                          ),
+                        ),
+
                       // Expand/collapse detail
                       Container(
                         width: 40,
@@ -184,7 +226,7 @@ class PemrosesanBody extends GetView<OperatorController> {
                           ),
                         ),
                       ),
-                    ],
+                    ],    
                   ),
                 ],
               ),

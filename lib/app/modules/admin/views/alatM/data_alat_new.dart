@@ -7,7 +7,7 @@
   import 'package:inven/app/global/controllers/global_user_controller.dart';
   import 'package:inven/app/modules/admin/controllers/admin_alat_controller.dart';
   import 'package:image_picker/image_picker.dart';
-  import 'dart:io';
+  // import 'dart:io';
 
   class DataAlatNew extends StatelessWidget {
     final Alat model;

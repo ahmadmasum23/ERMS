@@ -7,7 +7,8 @@ class DetailPeminjaman {
   final String? kondisiSaatPinjam;
   final String? kondisiSaatKembali;
   final DateTime? dibuatPada;
-  
+  final int? hariTerlambat; // tambahkan ini
+
   // Relations
   final Alat? alat;
 
@@ -19,6 +20,7 @@ class DetailPeminjaman {
     this.kondisiSaatKembali,
     this.dibuatPada,
     this.alat,
+    this.hariTerlambat,
   });
 
   Map<String, dynamic> toJson() {
@@ -42,9 +44,10 @@ class DetailPeminjaman {
       dibuatPada: json['dibuat_pada'] != null
           ? DateTime.parse(json['dibuat_pada'])
           : null,
-      alat: json['alat'] != null
-          ? Alat.fromJson(json['alat'])
-          : null,
+      alat: json['alat'] != null ? Alat.fromJson(json['alat']) : null,
+      hariTerlambat: json['hari_terlambat'] != null
+          ? json['hari_terlambat'] as int
+          : 0,  
     );
   }
 }

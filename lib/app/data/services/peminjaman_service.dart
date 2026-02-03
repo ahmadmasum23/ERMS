@@ -95,6 +95,83 @@ class PeminjamanService {
     }
   }
 
+Future<int?> getAturanDendaId(String jenis) async {
+  try {
+    final response = await _supabase
+        .from('aturan_denda')
+        .select('id')
+        .eq('jenis', jenis)
+        .single();
+    return response?['id'];
+  } catch (e) {
+    print("ERROR GET ATURAN DENDA ID: $e");
+    return null;
+  }
+}
+
+Future<num> getJumlahDenda(int aturanDendaId) async {
+  try {
+    final response = await _supabase
+        .from('aturan_denda')
+        .select('jumlah')
+        .eq('id', aturanDendaId)
+        .single();
+    return response?['jumlah'] ?? 0;
+  } catch (e) {
+    print("ERROR GET JUMLAH DENDA: $e");
+    return 0;
+  }
+}
+
+Future<bool> createDenda({
+  required int detailPeminjamanId,
+  required int aturanDendaId,
+  required num jumlah,
+  required String? diputuskanOleh,
+  String? catatan,
+}) async {
+  try {
+    final response = await _supabase
+        .from('denda')
+        .insert({
+          'detail_peminjaman_id': detailPeminjamanId,
+          'aturan_denda_id': aturanDendaId,
+          'jumlah': jumlah,
+          'diputuskan_oleh': diputuskanOleh,
+          'catatan': catatan,
+        });
+    
+    return response != null;
+  } catch (e) {
+    print("ERROR CREATE DENDA: $e");
+    return false;
+  }
+}
+
+Future<List<Map<String, dynamic>>> getDendaByPeminjaman(int peminjamanId) async {
+  try {
+    final detailIds = await _getDetailIdsByPeminjaman(peminjamanId);
+    if (detailIds.isEmpty) return [];
+
+    final result = await _supabase
+        .from('denda')
+        .select('*, aturan:aturan_denda(*)')
+        .filter('detail_peminjaman_id', 'in', detailIds);
+
+    return (result as List).cast<Map<String, dynamic>>();
+  } catch (e) {
+    print("ERROR GET DENDA BY PEMINJAMAN: $e");
+    return [];
+  }
+}
+
+
+// Helper untuk ambil semua detail_id dari peminjaman
+Future<List<int>> _getDetailIdsByPeminjaman(int peminjamanId) async {
+  final details = await getDetailByPeminjaman(peminjamanId);
+  return details.map((d) => d.id).toList();
+}
+
 Future<bool> updatePeminjaman({
   required int id,
   String? disetujuiOleh,
