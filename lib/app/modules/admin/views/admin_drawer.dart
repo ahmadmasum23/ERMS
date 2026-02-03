@@ -69,6 +69,7 @@ class AdminDrawer extends StatelessWidget {
                 _drawerItem(icon: Icons.refresh, title: 'Pengembalian', index: 5),
                 _drawerItem(icon: Icons.show_chart, title: 'Activity Log', index: 6),
                 _drawerItem(icon: Icons.person, title: 'Profile', index: 7),
+                _drawerItem(icon: Icons.rule, title: 'Aturan Denda', index: 8),
               ],
             ),
           ),

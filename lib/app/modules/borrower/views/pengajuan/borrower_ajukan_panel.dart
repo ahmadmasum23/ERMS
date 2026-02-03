@@ -74,16 +74,6 @@ class BorrowerAjukanPanel extends GetView<BorrowerController> {
               Text('Daftar Alat', style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 5),
               AjukanDaftarAlat(),
-
-              const SizedBox(height: 10),
-
-             
-
-              // Text('Unit barang', style: impl),
-
-              // const SizedBox(height: 5),
-
-              // Expanded(child: AjukanUnit()),
             ],
           ),
         ),

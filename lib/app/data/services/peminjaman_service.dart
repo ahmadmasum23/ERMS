@@ -95,7 +95,7 @@ class PeminjamanService {
     }
   }
 
- Future<bool> updatePeminjaman({
+Future<bool> updatePeminjaman({
   required int id,
   String? disetujuiOleh,
   DateTime? tanggalKembali,
@@ -112,31 +112,33 @@ class PeminjamanService {
     final Map<String, dynamic> updateData = {};
     if (disetujuiOleh != null) updateData['disetujui_oleh'] = disetujuiOleh;
     if (tanggalKembali != null) updateData['tanggal_kembali'] = tanggalKembali.toIso8601String();
-    if (status != null) updateData['status'] = status.toLowerCase(); // pastikan lowercase
+    if (status != null) updateData['status'] = status.toLowerCase();
     if (hariTerlambat != null) updateData['hari_terlambat'] = hariTerlambat;
     if (alasan != null) updateData['alasan'] = alasan;
 
     print("DEBUG UPDATE PEMINJAMAN: id=$id, data=$updateData");
 
-    // update tanpa execute()
     final response = await _supabase
         .from('peminjaman')
         .update(updateData)
         .eq('id', id)
-        .select(); // bisa ambil row updated jika mau
+        .select(); // ambil data updated
 
-    if (response == null || (response as List).isEmpty) {
+    // Pastikan response bukan null dan ada row
+    final List updatedRows = response as List<dynamic>? ?? [];
+    if (updatedRows.isEmpty) {
       print("UPDATE PEMINJAMAN GAGAL: row tidak ditemukan atau tidak diupdate");
       return false;
     }
 
-    print("UPDATE PEMINJAMAN BERHASIL: $response");
+    print("UPDATE PEMINJAMAN BERHASIL: $updatedRows");
     return true;
   } catch (e) {
     print("ERROR UPDATE PEMINJAMAN EXCEPTION: $e");
     return false;
   }
 }
+
 
 
   Future<bool> deletePeminjaman(int id) async {

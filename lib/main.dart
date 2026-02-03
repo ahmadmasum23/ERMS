@@ -42,3 +42,8 @@ void main() async {
     ),
   );
 }
+
+
+
+// alasan keperluan belum mask dalamcolom alasan 
+// denda belum terhubung 

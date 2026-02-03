@@ -7,15 +7,11 @@ import 'package:inven/app/modules/operator/controllers/operator_controller.dart'
 class PengembalianBody extends StatelessWidget {
   final AppPengajuan model;
 
-  const PengembalianBody({
-    super.key,
-    required this.model,
-  });
+  const PengembalianBody({super.key, required this.model});
 
   @override
   Widget build(BuildContext context) {
-final controller = Get.put(OperatorController());
-
+    final controller = Get.put(OperatorController());
 
     return Container(
       decoration: BoxDecoration(
@@ -36,43 +32,77 @@ final controller = Get.put(OperatorController());
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Pengembalian Barang #${model.id}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(model.status),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _getStatusText(model.status),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                double width = constraints.maxWidth;
+
+                double titleSize = width * 0.045;
+                double badgeFont = width * 0.03;
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// 🔹 JUDUL (fleksibel)
+                    Expanded(
+                      child: Text(
+                        'Pengembalian Barang ${model.id}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: titleSize.clamp(14, 18),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+
+                    const SizedBox(width: 8),
+
+                    /// 🔹 STATUS BADGE
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: width * 0.03,
+                        vertical: width * 0.012,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(model.status),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _getStatusText(model.status),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: badgeFont.clamp(10, 14),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
 
             const SizedBox(height: 10),
 
             // Detail
-            _buildDetailRow('Tanggal Pinjam', model.tanggalPinjam.toString().split(' ')[0]),
+            _buildDetailRow(
+              'Tanggal Pinjam',
+              model.tanggalPinjam.toString().split(' ')[0],
+            ),
             const SizedBox(height: 8),
-            _buildDetailRow('Tanggal Jatuh Tempo', model.tanggalJatuhTempo.toString().split(' ')[0]),
+            _buildDetailRow(
+              'Tanggal Jatuh Tempo',
+              model.tanggalJatuhTempo.toString().split(' ')[0],
+            ),
             const SizedBox(height: 8),
-            _buildDetailRow('Tanggal Kembali',
-                model.tanggalKembali != null ? model.tanggalKembali.toString().split(' ')[0] : '-'),
+            _buildDetailRow(
+              'Tanggal Kembali',
+              model.tanggalKembali != null
+                  ? model.tanggalKembali.toString().split(' ')[0]
+                  : '-',
+            ),
             if (model.hariTerlambat > 0) ...[
               const SizedBox(height: 8),
               _buildDetailRow('Hari Terlambat', '${model.hariTerlambat} hari'),
@@ -93,7 +123,8 @@ final controller = Get.put(OperatorController());
                       : () async {
                           final confirm = await Get.defaultDialog(
                             title: 'Konfirmasi',
-                            middleText: 'Ajukan pengembalian untuk peminjaman ini?',
+                            middleText:
+                                'Ajukan pengembalian untuk peminjaman ini?',
                             textConfirm: 'Ya',
                             textCancel: 'Batal',
                             onConfirm: () => Get.back(result: true),
@@ -142,12 +173,7 @@ final controller = Get.put(OperatorController());
         ),
         Expanded(
           flex: 3,
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: Colors.black87,
-            ),
-          ),
+          child: Text(value, style: const TextStyle(color: Colors.black87)),
         ),
       ],
     );

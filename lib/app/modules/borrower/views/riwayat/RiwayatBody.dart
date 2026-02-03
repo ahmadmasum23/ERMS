@@ -30,7 +30,7 @@ class RiwayatBody extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Peminjaman #${model.id}',
+                  'Peminjaman ${model.id}',
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 16),
                 ),

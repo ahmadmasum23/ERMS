@@ -212,14 +212,17 @@ class OperatorController extends GetxController {
       bttnLoad.value = false;
     }
   }
-
-  Future<void> ajukanPengembalian(int id) async {
+//  fungsi ajukan pengembalian
+ Future<void> ajukanPengembalian(int id) async {
   try {
     bttnLoad.value = true;
 
+    final now = DateTime.now(); // waktu sekarang
+
     final result = await _peminjamanService.updatePeminjaman(
       id: id,
-      status: 'menunggu_pengembalian', // sekarang valid di DB
+      status: 'menunggu_pengembalian', // status tetap valid di DB
+      tanggalKembali: now, // isi kolom tanggal_kembali
     );
 
     if (result) {
@@ -234,6 +237,7 @@ class OperatorController extends GetxController {
     bttnLoad.value = false;
   }
 }
+
 
 
 
