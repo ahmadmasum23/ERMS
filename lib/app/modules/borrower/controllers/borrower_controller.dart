@@ -20,26 +20,34 @@ class StaticServicesGet {
   final AlatService _alatService = AlatService();
 
   Future<List<AppPengajuan>> dataPinjam(dynamic userId) async {
-    print('DEBUG: dataPinjam called with userId: $userId (type: ${userId.runtimeType})');
+    print(
+      'DEBUG: dataPinjam called with userId: $userId (type: ${userId.runtimeType})',
+    );
     // Handle both String and int userId types
     final userIdString = userId is int ? userId.toString() : userId as String;
-    
+
     try {
-      final peminjamanList = await _peminjamanService.getPeminjamanByUser(userIdString);
+      final peminjamanList = await _peminjamanService.getPeminjamanByUser(
+        userIdString,
+      );
       print('DEBUG: Got ${peminjamanList.length} peminjaman records');
       // Convert Peminjaman to AppPengajuan - we need to create a conversion
-      return peminjamanList.map((p) => AppPengajuan(
-        id: p.id,
-        peminjamId: p.peminjamId,
-        disetujuiOleh: p.disetujuiOleh,
-        tanggalPinjam: p.tanggalPinjam,
-        tanggalJatuhTempo: p.tanggalJatuhTempo,
-        tanggalKembali: p.tanggalKembali,
-        status: p.status,
-        hariTerlambat: p.hariTerlambat,
-        alasan: p.alasan,
-        dibuatPada: p.dibuatPada,
-      )).toList();
+      return peminjamanList
+          .map(
+            (p) => AppPengajuan(
+              id: p.id,
+              peminjamId: p.peminjamId,
+              disetujuiOleh: p.disetujuiOleh,
+              tanggalPinjam: p.tanggalPinjam,
+              tanggalJatuhTempo: p.tanggalJatuhTempo,
+              tanggalKembali: p.tanggalKembali,
+              status: p.status,
+              hariTerlambat: p.hariTerlambat,
+              alasan: p.alasan,
+              dibuatPada: p.dibuatPada,
+            ),
+          )
+          .toList();
     } catch (e) {
       print('DEBUG: Error in dataPinjam: $e');
       // Return empty list if there's a permission error
@@ -53,25 +61,33 @@ class StaticServicesGet {
   }
 
   Future<List<AppPengajuan>> dataRiwayat(dynamic userId) async {
-    print('DEBUG: dataRiwayat called with userId: $userId (type: ${userId.runtimeType})');
+    print(
+      'DEBUG: dataRiwayat called with userId: $userId (type: ${userId.runtimeType})',
+    );
     // Handle both String and int userId types
     final userIdString = userId is int ? userId.toString() : userId as String;
-    
+
     try {
-      final peminjamanList = await _peminjamanService.getPeminjamanByUser(userIdString);
+      final peminjamanList = await _peminjamanService.getPeminjamanByUser(
+        userIdString,
+      );
       print('DEBUG: Got ${peminjamanList.length} riwayat records');
-      return peminjamanList.map((p) => AppPengajuan(
-        id: p.id,
-        peminjamId: p.peminjamId,
-        disetujuiOleh: p.disetujuiOleh,
-        tanggalPinjam: p.tanggalPinjam,
-        tanggalJatuhTempo: p.tanggalJatuhTempo,
-        tanggalKembali: p.tanggalKembali,
-        status: p.status,
-        hariTerlambat: p.hariTerlambat,
-        alasan: p.alasan,
-        dibuatPada: p.dibuatPada,
-      )).toList();
+      return peminjamanList
+          .map(
+            (p) => AppPengajuan(
+              id: p.id,
+              peminjamId: p.peminjamId,
+              disetujuiOleh: p.disetujuiOleh,
+              tanggalPinjam: p.tanggalPinjam,
+              tanggalJatuhTempo: p.tanggalJatuhTempo,
+              tanggalKembali: p.tanggalKembali,
+              status: p.status,
+              hariTerlambat: p.hariTerlambat,
+              alasan: p.alasan,
+              dibuatPada: p.dibuatPada,
+            ),
+          )
+          .toList();
     } catch (e) {
       print('DEBUG: Error in dataRiwayat: $e');
       // Return empty list if there's a permission error
@@ -87,7 +103,9 @@ class StaticServicesGet {
   Future<List<Alat>> dataBarang() async {
     print('DEBUG: StaticServicesGet.dataBarang called');
     final result = await _alatService.getAllAlat();
-    print('DEBUG: StaticServicesGet.dataBarang returned ${result.length} items');
+    print(
+      'DEBUG: StaticServicesGet.dataBarang returned ${result.length} items',
+    );
     return result;
   }
 
@@ -95,7 +113,9 @@ class StaticServicesGet {
     print('DEBUG: StaticServicesGet.dataKategori called');
     try {
       final result = await _alatService.getKategoriOptions();
-      print('DEBUG: StaticServicesGet.dataKategori returned ${result.length} items');
+      print(
+        'DEBUG: StaticServicesGet.dataKategori returned ${result.length} items',
+      );
       return result;
     } catch (e) {
       print('DEBUG: Error in dataKategori: $e');
@@ -119,12 +139,12 @@ class BorrowerController extends GetxController {
 
   final riwayatList = <AppPengajuan>[].obs;
   final pinjamlist = <AppPengajuan>[].obs;
-  
+
   // Data barang dan unit
   final itemList = <Alat>[].obs;
   final kategoriList = <KategoriAlat>[].obs; // Add category list
   final unitList = <dynamic>[].obs; // TODO: Replace with proper unit model type
-  
+
   // Selected category ID
   var slctKategoriId = RxnInt();
 
@@ -138,7 +158,7 @@ class BorrowerController extends GetxController {
   final expandP = ''.obs;
 
   var isIndex = 0.obs; //index navigasi
-  
+
   // Service instances
   final PeminjamanService servPst = PeminjamanService();
   final PeminjamanService servPut = PeminjamanService();
@@ -158,9 +178,10 @@ class BorrowerController extends GetxController {
 
   //pemantauan untuk checkbox
   var slctItemId = <int>[].obs; //checkbox id barang (changed to list)
-  var slctUnitId = <int>[].obs; //checkbox id unit (this will be the selected equipment)
+  var slctUnitId =
+      <int>[].obs; //checkbox id unit (this will be the selected equipment)
   var isCheckAll = false.obs;
-  
+
   // Selected item for dropdown (single selection)
   var selectedItemId = RxnInt();
 
@@ -188,7 +209,7 @@ class BorrowerController extends GetxController {
       print('DEBUG: Creating new GlobalUserController');
       userCtrl = Get.put(GlobalUserController());
     }
-    
+
     super.onInit();
 
     print('DEBUG: Calling fetchData from onInit');
@@ -244,7 +265,7 @@ class BorrowerController extends GetxController {
         }
         return false;
       }).toList();
-      
+
       slctItemId.clear();
       slctItemId.addAll(filteredItems.map((item) => item.id));
       isCheckAll.value = true;
@@ -264,7 +285,7 @@ class BorrowerController extends GetxController {
       }
       return false;
     }).toList();
-    
+
     isCheckAll.value = slctItemId.length == filteredItems.length;
     slctItemId.refresh();
     update(); // Ensure UI updates
@@ -283,7 +304,7 @@ class BorrowerController extends GetxController {
 
     isLoading.value = false;
   }
-  
+
   // Manual refresh method for user to call
   Future<void> manualRefresh() async {
     print('DEBUG: Manual refresh triggered');
@@ -311,8 +332,6 @@ class BorrowerController extends GetxController {
     update();
   }
 
-
-
   //fungsi filterchips
   void filterChips() {
     int select = slctOps.value;
@@ -326,11 +345,17 @@ class BorrowerController extends GetxController {
         data.where((r) {
           final status = r.status.toLowerCase();
           switch (select) {
-            case 9: return status.contains('pending') || status.contains('menunggu');
-            case 4: return status.contains('disetujui');
-            case 1: return status.contains('ditolak');
-            case 2: return status.contains('selesai') || status.contains('dikembalikan');
-            default: return false;
+            case 9:
+              return status.contains('pending') || status.contains('menunggu');
+            case 4:
+              return status.contains('disetujui');
+            case 1:
+              return status.contains('ditolak');
+            case 2:
+              return status.contains('selesai') ||
+                  status.contains('dikembalikan');
+            default:
+              return false;
           }
         }).toList(),
       );
@@ -341,23 +366,31 @@ class BorrowerController extends GetxController {
   Future<void> fetchData() async {
     try {
       print('DEBUG: BorrowerController fetchData started');
-      
+
       // Check if user is authenticated
       if (userCtrl.user.value == null) {
         print('DEBUG: User not authenticated, cannot fetch data');
         Get.snackbar('Error', 'User not authenticated');
         return;
       }
-      
+
       isLoading.value = true;
 
       //get hanya riwayat peminjaman
-      final pinjam = await StaticServicesGet().dataPinjam(userCtrl.user.value!.id);
+      final pinjam = await StaticServicesGet().dataPinjam(
+        userCtrl.user.value!.id,
+      );
       print('DEBUG: Fetched ${pinjam.length} peminjaman records');
 
       //get semua riwayat
-      final riwayat = await StaticServicesGet().dataRiwayat(userCtrl.user.value!.id);
+      final riwayat = await StaticServicesGet().dataRiwayat(
+        userCtrl.user.value!.id,
+      );
       print('DEBUG: Fetched ${riwayat.length} riwayat records');
+      for (var p in riwayat) {
+        final details = await servPst.getDetailByPeminjaman(p.id);
+        p.detailAlat = details; // simpan ke AppPengajuan
+      }
 
       //get data barang
       final barang = await StaticServicesGet().dataBarang();
@@ -394,7 +427,7 @@ class BorrowerController extends GetxController {
       //data riwayat difilter
       riwayatFltr.assignAll(riwayat);
       print('DEBUG: riwayatFltr assigned with ${riwayatFltr.length} items');
-      
+
       print('DEBUG: BorrowerController fetchData completed successfully');
     } catch (e) {
       print('ERROR in BorrowerController fetchData: $e');
@@ -414,7 +447,7 @@ class BorrowerController extends GetxController {
   //melakukan pengajuan
   Future<void> pengajuan() async {
     final user = userCtrl.user.value;
-    
+
     // Validate form first
     if (!validateForm()) {
       Get.snackbar('Validasi Gagal', errorList.join('\n'));
@@ -436,23 +469,23 @@ class BorrowerController extends GetxController {
 
       // Create detail peminjaman records for each selected equipment
       final List<Future<DetailPeminjaman>> detailFutures = [];
-      
+
       for (int equipmentId in slctItemId) {
         // Find the corresponding alat for this equipment
         final alat = itemList.firstWhere((item) => item.id == equipmentId);
-        
+
         detailFutures.add(
           servPst.createDetailPeminjaman(
             peminjamanId: peminjaman.id,
             alatId: alat.id,
             kondisiSaatPinjam: alat.kondisi,
-          )
+          ),
         );
       }
 
       // Wait for all detail records to be created
       final details = await Future.wait(detailFutures);
-      
+
       // Update alat status to 'dipinjam'
       for (final detail in details) {
         await _alatService.updateAlat(id: detail.alatId, status: 'dipinjam');
@@ -461,37 +494,36 @@ class BorrowerController extends GetxController {
       // Success
       resetForm();
       refresh();
-      
+
       Get.snackbar(
-        'Sukses', 
+        'Sukses',
         'Pengajuan peminjaman berhasil diajukan. Menunggu persetujuan petugas.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
-      
     } catch (e) {
       print('Error in pengajuan: $e');
-      
+
       // Handle permission denied error specifically
       if (e.toString().contains('permission denied')) {
         // Simpan secara lokal sebagai fallback
         await saveLocalPengajuan();
-        
+
         Get.snackbar(
-          'Disimpan Offline', 
+          'Disimpan Offline',
           'Pengajuan disimpan secara lokal. Akan dikirimkan ketika koneksi tersedia.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.blue,
           colorText: Colors.white,
         );
-        
+
         // Reset form setelah menyimpan
         resetForm();
         refresh();
       } else {
         Get.snackbar(
-          'Gagal', 
+          'Gagal',
           'Gagal mengajukan peminjaman: ${e.toString()}',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
@@ -532,7 +564,7 @@ class BorrowerController extends GetxController {
   //fungsi navigasi page
   void onChangePage(int index) {
     isIndex.value = index;
-    
+
     // Refresh data when navigating to pengajuan page (index 1)
     if (index == 1) {
       print('DEBUG: Navigating to pengajuan page, refreshing data');
@@ -542,7 +574,7 @@ class BorrowerController extends GetxController {
 
   //fungsi validasi form
   bool validateForm() {
-    List<String> error = []; 
+    List<String> error = [];
 
     //validasi tanggal peminjaman
     if (tglPinjam.value == null) {
@@ -604,7 +636,7 @@ class BorrowerController extends GetxController {
   Future<void> saveLocalPengajuan() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Simpan data pengajuan
       final localData = {
         'userId': userCtrl.user.value!.id,
@@ -621,15 +653,15 @@ class BorrowerController extends GetxController {
         'returnDate': tglKembali.value!.toIso8601String(),
         'reason': ctrlKeperluan.text,
         'createdAt': DateTime.now().toIso8601String(),
-        'status': 'pending_offline'
+        'status': 'pending_offline',
       };
 
       // Ambil semua pengajuan local
       final savedData = prefs.getStringList('pending_loan_requests') ?? [];
       savedData.add(jsonEncode(localData));
-      
+
       await prefs.setStringList('pending_loan_requests', savedData);
-      
+
       print('DEBUG: Pengajuan disimpan secara lokal');
     } catch (e) {
       print('ERROR saving local pengajuan: $e');
@@ -641,8 +673,10 @@ class BorrowerController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedData = prefs.getStringList('pending_loan_requests') ?? [];
-      
-      return savedData.map((data) => jsonDecode(data) as Map<String, dynamic>).toList();
+
+      return savedData
+          .map((data) => jsonDecode(data) as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       print('ERROR getting local pengajuan: $e');
       return [];
@@ -653,7 +687,7 @@ class BorrowerController extends GetxController {
   Future<void> syncOfflinePengajuan() async {
     try {
       final localPengajuan = await getLocalPengajuan();
-      
+
       if (localPengajuan.isEmpty) {
         print('DEBUG: Tidak ada pengajuan offline untuk disinkronkan');
         Get.snackbar(
@@ -665,20 +699,22 @@ class BorrowerController extends GetxController {
         );
         return;
       }
-      
-      print('DEBUG: Menemukan ${localPengajuan.length} pengajuan offline untuk disinkronkan');
-      
+
+      print(
+        'DEBUG: Menemukan ${localPengajuan.length} pengajuan offline untuk disinkronkan',
+      );
+
       // Buat copy dari list untuk iterasi
       final pengajuanCopy = List<Map<String, dynamic>>.from(localPengajuan);
       int successCount = 0;
-      
+
       for (int i = 0; i < pengajuanCopy.length; i++) {
         final pengajuan = pengajuanCopy[i];
-        
+
         try {
           // Buat pengajuan baru ke server
           final user = userCtrl.user.value;
-          
+
           // Gunakan data dari pengajuan offline
           final peminjaman = await servPst.createPeminjaman(
             peminjamId: pengajuan['userId'],
@@ -689,36 +725,43 @@ class BorrowerController extends GetxController {
           );
 
           // Buat detail peminjaman untuk setiap alat
-          final List<int> equipmentIds = List<int>.from(pengajuan['equipmentIds']);
+          final List<int> equipmentIds = List<int>.from(
+            pengajuan['equipmentIds'],
+          );
           final List<Future<DetailPeminjaman>> detailFutures = [];
-          
+
           for (int equipmentId in equipmentIds) {
-            final alat = itemList.firstWhere((item) => item.id == equipmentId, orElse: () => itemList.first);
-            
+            final alat = itemList.firstWhere(
+              (item) => item.id == equipmentId,
+              orElse: () => itemList.first,
+            );
+
             detailFutures.add(
               servPst.createDetailPeminjaman(
                 peminjamanId: peminjaman.id,
                 alatId: alat.id,
                 kondisiSaatPinjam: alat.kondisi,
-              )
+              ),
             );
           }
 
           // Tunggu semua detail dibuat
           await Future.wait(detailFutures);
-          
+
           // Update status alat
           for (int equipmentId in equipmentIds) {
-            final alat = itemList.firstWhere((item) => item.id == equipmentId, orElse: () => itemList.first);
+            final alat = itemList.firstWhere(
+              (item) => item.id == equipmentId,
+              orElse: () => itemList.first,
+            );
             await _alatService.updateAlat(id: alat.id, status: 'dipinjam');
           }
 
           print('DEBUG: Berhasil sinkronisasi pengajuan offline ${i + 1}');
           successCount++;
-          
+
           // Hapus dari offline storage
           await deleteLocalPengajuanByData(pengajuan);
-          
         } catch (e) {
           print('ERROR sync pengajuan offline ${i + 1}: $e');
           // Jika gagal karena permission, lanjutkan ke berikutnya
@@ -730,7 +773,7 @@ class BorrowerController extends GetxController {
           }
         }
       }
-      
+
       if (successCount > 0) {
         Get.snackbar(
           'Sync Berhasil',
@@ -748,7 +791,6 @@ class BorrowerController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
       }
-      
     } catch (e) {
       print('ERROR syncOfflinePengajuan: $e');
       Get.snackbar(
@@ -762,15 +804,17 @@ class BorrowerController extends GetxController {
   }
 
   // Fungsi untuk menghapus pengajuan lokal berdasarkan data
-  Future<void> deleteLocalPengajuanByData(Map<String, dynamic> pengajuanData) async {
+  Future<void> deleteLocalPengajuanByData(
+    Map<String, dynamic> pengajuanData,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedData = prefs.getStringList('pending_loan_requests') ?? [];
-      
+
       // Cari dan hapus entry yang cocok dengan data pengajuan
       final jsonString = jsonEncode(pengajuanData);
       savedData.remove(jsonString);
-      
+
       await prefs.setStringList('pending_loan_requests', savedData);
       print('DEBUG: Pengajuan lokal dihapus');
     } catch (e) {
@@ -783,7 +827,7 @@ class BorrowerController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedData = prefs.getStringList('pending_loan_requests') ?? [];
-      
+
       if (index >= 0 && index < savedData.length) {
         savedData.removeAt(index);
         await prefs.setStringList('pending_loan_requests', savedData);

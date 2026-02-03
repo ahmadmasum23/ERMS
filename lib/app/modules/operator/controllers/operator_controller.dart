@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/models/Peminjaman.dart';
@@ -9,8 +8,6 @@ import 'package:inven/app/global/controllers/global_user_controller.dart';
 import 'package:inven/app/modules/login/controllers/login_controller.dart';
 import 'package:inven/app/modules/login/views/login_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../data/models/AppUser.dart';
-import '../../../data/services/database_service_provider.dart';
 
 class OperatorController extends GetxController {
   late final GlobalUserController userCtrl;
@@ -18,66 +15,22 @@ class OperatorController extends GetxController {
 
   ProfilPengguna? get userData => userCtrl.user.value;
 
-  @override
-  void onClose() {
-    ctrlNote.dispose();
-    ctrlFill.dispose();
-    focusFil.dispose();
-    super.onClose();
-  }
+  // Expand panel
+  final expandP = ''.obs;
+  final expandR = ''.obs;
+  final expandB = ''.obs;
 
-  @override
-  void onInit() {
-    // Safely get GlobalUserController
-    try {
-      userCtrl = Get.find<GlobalUserController>();
-    } catch (e) {
-      // If not found, create a new one
-      userCtrl = Get.put(GlobalUserController());
-    }
-                
-    super.onInit();
-    fetchUserProfile();
-    fetchData();
-  }
-  Future<void> fetchUserProfile() async {
-    try {
-      final userId = userCtrl.user.value?.id ?? DatabaseServiceProvider.currentUserId;
-      if (userId == null) return;
+  // Loading indikator
+  var bttnLoad = false.obs;
+  var isLoading = false.obs;
 
-      final response = await Supabase.instance.client
-          .from('vw_user_with_email')
-          .select()
-          .eq('id', userId)
-          .single();
-
-      // Update user di GlobalUserController
-      userCtrl.user.value = ProfilPengguna.fromJson(response);
-      print("DEBUG: User Profile = ${userCtrl.user.value?.toJson()}");
-    } catch (e) {
-      print("ERROR FETCH USER PROFILE: $e");
-      Get.snackbar(
-        "Error",
-        "Gagal memuat data profil",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade900,
-      );
-    }
-  }
-
-  final expandP = ''.obs; //expand proses
-  final expandR = ''.obs; //expand riwayat
-  final expandB = ''.obs; //expand pengembalian (back)
-
-  var bttnLoad = false.obs; //loading indikator
-  var isLoading = false.obs; //loading value
-
+  // Unit selection
   var selectUnit = <int, bool>{}.obs;
   final ctrlNote = TextEditingController();
   final ctrlFill = TextEditingController();
   final focusFil = FocusNode();
 
+  // Data peminjaman
   final pengajuan = <Peminjaman>[].obs;
   final kembalian = <Peminjaman>[].obs;
   final riwayatAll = <Peminjaman>[].obs;
@@ -94,7 +47,68 @@ class OperatorController extends GetxController {
   };
   var selectOpsi = 0.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
 
+    // Ambil GlobalUserController
+    try {
+      userCtrl = Get.find<GlobalUserController>();
+    } catch (_) {
+      userCtrl = Get.put(GlobalUserController());
+    }
+
+    fetchUserProfile();
+    fetchData();
+  }
+
+  @override
+  void onClose() {
+    ctrlNote.dispose();
+    ctrlFill.dispose();
+    focusFil.dispose();
+    super.onClose();
+  }
+
+  Future<void> fetchUserProfile() async {
+    try {
+      final userId = userCtrl.user.value?.id;
+      if (userId == null) return;
+
+      final response = await Supabase.instance.client
+          .from('vw_user_with_email')
+          .select()
+          .eq('id', userId)
+          .single();
+
+      userCtrl.user.value = ProfilPengguna.fromJson(response);
+      print("DEBUG: User Profile = ${userCtrl.user.value?.toJson()}");
+    } catch (e) {
+      print("ERROR FETCH USER PROFILE: $e");
+      Get.snackbar(
+        "Error",
+        "Gagal memuat data profil",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade900,
+      );
+    }
+  }
+
+  String getStatusString(int statusId) {
+    switch (statusId) {
+      case 1:
+        return 'menunggu';
+      case 2:
+        return 'disetujui';
+      case 3:
+        return 'ditolak';
+      case 4:
+        return 'dikembalikan';
+      default:
+        return 'menunggu';
+    }
+  }
 
   void filterChips() {
     int select = selectOpsi.value;
@@ -103,20 +117,8 @@ class OperatorController extends GetxController {
       riwayatFilter.assignAll(riwayatAll);
     } else {
       riwayatFilter.assignAll(
-        riwayatAll
-            .where((r) => r.status == getStatusString(select))
-            .toList(),
+        riwayatAll.where((r) => r.status == getStatusString(select)).toList(),
       );
-    }
-  }
-
-  String getStatusString(int statusId) {
-    switch (statusId) {
-      case 1: return 'menunggu';
-      case 2: return 'disetujui';
-      case 3: return 'ditolak';
-      case 4: return 'dikembalikan';
-      default: return 'menunggu';
     }
   }
 
@@ -132,9 +134,9 @@ class OperatorController extends GetxController {
 
   void initUnit(List<dynamic> units) {
     selectUnit.clear();
-    // Implementation for unit selection
+    // implementasi unit selection jika dibutuhkan
   }
-  
+
   void cetakPdfRiwayat() {
     Get.snackbar('Info', 'Fitur cetak PDF akan segera tersedia');
   }
@@ -152,13 +154,27 @@ class OperatorController extends GetxController {
         .toList();
   }
 
+  /// Update status peminjaman (Setujui / Tolak)
   Future<void> updtData(int id, int statusId) async {
     try {
       bttnLoad.value = true;
 
       final note = ctrlNote.text;
-      final status = getStatusString(statusId);
-      
+
+      String status;
+      String pesanSnackbar;
+
+      if (statusId == 2) {
+        status = 'disetujui';
+        pesanSnackbar = 'Pengajuan disetujui';
+      } else if (statusId == 3) {
+        status = 'ditolak';
+        pesanSnackbar = 'Pengajuan ditolak';
+      } else {
+        status = 'menunggu';
+        pesanSnackbar = 'Status tidak dikenal';
+      }
+
       final result = await _peminjamanService.updatePeminjaman(
         id: id,
         status: status,
@@ -169,84 +185,97 @@ class OperatorController extends GetxController {
       if (result) {
         Get.snackbar(
           'Sukses',
-          statusId == 2 ? 'Pengajuan disetujui' : 'Pengajuan ditolak',
+          pesanSnackbar,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
         );
-        await fetchData(); // Refresh data
+        await fetchData();
       } else {
-        Get.snackbar('Gagal', 'Terjadi kegagalan proses');
+        Get.snackbar(
+          'Gagal',
+          'Terjadi kegagalan proses',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan $e');
-    } finally {
-      bttnLoad.value = false;
-    }
-  }
-
-  Future<void> pengembalian(int id) async {
-    try {
-      isLoading.value = true;
-      bttnLoad.value = true;
-
-      final unit = getSelectUnit();
-      // Update peminjaman status to 'dikembalikan'
-      final result = await _peminjamanService.updatePeminjaman(
-        id: id,
-        status: 'dikembalikan',
-        tanggalKembali: DateTime.now(),
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
-
-      if (result) {
-        Get.back();
-        Get.snackbar('Sukses', 'Pengembalian diproses');
-        await fetchData(); // Refresh data
-      } else {
-        Get.snackbar('Gagal', 'Pengembalian gagal');
-      }
-    } catch (e) {
-      print(e);
-      Get.snackbar('Error', 'message: $e');
     } finally {
-      isLoading.value = false;
       bttnLoad.value = false;
     }
   }
+
+  Future<void> ajukanPengembalian(int id) async {
+  try {
+    bttnLoad.value = true;
+
+    final result = await _peminjamanService.updatePeminjaman(
+      id: id,
+      status: 'menunggu_pengembalian', // sekarang valid di DB
+    );
+
+    if (result) {
+      Get.snackbar('Sukses', 'Pengajuan pengembalian dikirim');
+      await fetchData();
+    } else {
+      Get.snackbar('Gagal', 'Gagal mengajukan pengembalian');
+    }
+  } catch (e) {
+    Get.snackbar('Error', 'Terjadi kesalahan: $e');
+  } finally {
+    bttnLoad.value = false;
+  }
+}
+
+
 
   Future<void> refresh() async {
     isLoading.value = true;
 
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
 
     await fetchData();
 
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
 
     isLoading.value = false;
   }
 
-  Future<void> fetchData() async {
-    try {
-      isLoading.value = true;
+ Future<void> fetchData() async {
+  try {
+    isLoading.value = true;
 
-      final dataPengajuan = await _peminjamanService.getAllPeminjaman();
-      final pengembalian = dataPengajuan.where((p) => p.status == 'dikembalikan').toList();
-      final riwayatData = dataPengajuan;
+    final dataPengajuan = await _peminjamanService.getAllPeminjaman();
 
-      pengajuan.assignAll(dataPengajuan);
-      kembalian.assignAll(pengembalian);
-      riwayatAll.assignAll(riwayatData);
-      print('cek status: ${riwayatAll.map((e) => e.status)}');
-      riwayatFilter.assignAll(riwayatData);
-    } catch (e) {
-      Get.snackbar('Error', 'Error fetch data controller: $e');
-    } finally {
-      isLoading.value = false;
-    }
+    // pengembalian = yang diajukan pengembalian oleh peminjam
+    final pengembalian = dataPengajuan
+        .where((p) => p.status == 'menunggu_pengembalian')
+        .toList();
+
+    pengajuan.assignAll(dataPengajuan);
+    kembalian.assignAll(pengembalian); // ini untuk panel operator
+    riwayatAll.assignAll(dataPengajuan);
+    riwayatFilter.assignAll(dataPengajuan);
+  } catch (e) {
+    Get.snackbar('Error', 'Error fetch data controller: $e');
+  } finally {
+    isLoading.value = false;
   }
+}
+
 
   void filterD() {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
 
-    _debounce = Timer(Duration(milliseconds: 300), () {
+    _debounce = Timer(const Duration(milliseconds: 300), () {
       final keyword = ctrlFill.text.toLowerCase();
 
       if (keyword.isEmpty) {
@@ -257,9 +286,8 @@ class OperatorController extends GetxController {
       final hasil = riwayatAll.where((r) {
         final peminjam = r.peminjam?.namaLengkap.toLowerCase() ?? '';
         final alasan = r.alasan?.toLowerCase() ?? '';
-        
-        return peminjam.contains(keyword) ||
-            alasan.contains(keyword);
+
+        return peminjam.contains(keyword) || alasan.contains(keyword);
       }).toList();
 
       pengajuan.assignAll(hasil);

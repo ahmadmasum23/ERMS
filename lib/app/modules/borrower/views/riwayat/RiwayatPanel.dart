@@ -3,20 +3,24 @@ import 'package:get/get.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
 import 'package:inven/app/global/widgets/CustomFilterChips.dart';
 import 'package:inven/app/modules/borrower/controllers/borrower_controller.dart';
-import 'package:inven/app/modules/borrower/views/riwayat/RiwayatBody.dart';
+import 'RiwayatBody.dart';
 
 class RiwayatPanel extends GetView<BorrowerController> {
+  const RiwayatPanel({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CustomAppbar(
+        // AppBar kustom
+        const CustomAppbar(
           title: 'Riwayat',
           boldTitle: 'Peminjaman',
           showNotif: false,
         ),
 
+        // Filter + Refresh
         Padding(
           padding: const EdgeInsets.all(10),
           child: Row(
@@ -34,17 +38,17 @@ class RiwayatPanel extends GetView<BorrowerController> {
                   ),
                 );
               }),
-
               IconButton(
                 onPressed: () {
                   controller.refresh();
                 },
-                icon: Icon(Icons.refresh),
+                icon: const Icon(Icons.refresh),
               ),
             ],
           ),
         ),
 
+        // List Riwayat
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -54,20 +58,17 @@ class RiwayatPanel extends GetView<BorrowerController> {
               }
 
               if (controller.riwayatFltr.isEmpty) {
-                return Center(child: Text('kosong'));
+                return const Center(child: Text('Tidak ada riwayat peminjaman'));
               }
 
               return ListView.separated(
-                padding: const EdgeInsets.all(0),
+                padding: EdgeInsets.zero,
+                itemCount: controller.riwayatFltr.length,
                 itemBuilder: (context, index) {
                   final item = controller.riwayatFltr[index];
-
                   return RiwayatBody(model: item);
                 },
-                separatorBuilder: (context, index) {
-                  return const SizedBox(height: 0);
-                },
-                itemCount: controller.riwayatFltr.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
               );
             }),
           ),

@@ -1,3 +1,5 @@
+import 'DetailPeminjaman.dart'; // pastikan sudah import
+
 class AppPengajuan {
   final int id;
   final String peminjamId;
@@ -9,6 +11,9 @@ class AppPengajuan {
   final int hariTerlambat;
   final String? alasan;
   final DateTime? dibuatPada;
+
+    List<DetailPeminjaman>? detailAlat;
+
 
   AppPengajuan({
     required this.id,

@@ -34,6 +34,7 @@ class PersetujuanBody extends GetView<OperatorController> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   // Borrower information
                   Expanded(
@@ -41,7 +42,8 @@ class PersetujuanBody extends GetView<OperatorController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          model.peminjam?.namaLengkap ?? 'Peminjam tidak dikenal',
+                          model.peminjam?.namaLengkap ??
+                              'Peminjam tidak dikenal',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -73,78 +75,91 @@ class PersetujuanBody extends GetView<OperatorController> {
                       ],
                     ),
                   ),
-                  
+
                   // Action buttons
                   Row(
+                    mainAxisSize: MainAxisSize.min, 
                     children: [
-                      // Approve button
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        child: ElevatedButton(
-                          onPressed: controller.bttnLoad.value 
-                            ? null 
-                            : () => controller.updtData(model.id, 2), // 2 = Disetujui
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15,
-                              vertical: 10,
+                      // Setujui button
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 5),
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: controller.bttnLoad.value
+                                ? null
+                                : () => controller.updtData(model.id, 2),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  5,
+                                ), // radius 5
+                              ),
                             ),
+                            child: controller.bttnLoad.value
+                                ? const SizedBox(width: 20, height: 20)
+                                : const Text('Setujui'),
                           ),
-                          child: controller.bttnLoad.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Setujui'),
                         ),
                       ),
-                      
-                      // Reject button
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        child: ElevatedButton(
-                          onPressed: controller.bttnLoad.value 
-                            ? null 
-                            : () => controller.updtData(model.id, 3), // 3 = Ditolak
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15,
-                              vertical: 10,
+
+                      // Tolak button
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 5),
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: controller.bttnLoad.value
+                                ? null
+                                : () => controller.updtData(model.id, 3),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  5,
+                                ), // radius 5
+                              ),
                             ),
+                            child: controller.bttnLoad.value
+                                ? const SizedBox(width: 20, height: 20)
+                                : const Text('Tolak'),
                           ),
-                          child: controller.bttnLoad.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Tolak'),
                         ),
                       ),
-                      
+
                       // Expand button
-                      IconButton(
-                        onPressed: () {
-                          if (isExpanded) {
-                            controller.expandP.value = '';
-                          } else {
-                            controller.expandP.value = id;
-                          }
-                        },
-                        icon: Icon(
-                          isExpanded ? Icons.expand_less : Icons.expand_more,
-                          color: Colors.grey.shade700,
+                      Container(
+                        width: 40,
+                        height: 43,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(5), // radius 5
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            if (isExpanded) {
+                              controller.expandP.value = '';
+                            } else {
+                              controller.expandP.value = id;
+                            }
+                          },
+                          icon: Icon(
+                            isExpanded ? Icons.expand_less : Icons.expand_more,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],

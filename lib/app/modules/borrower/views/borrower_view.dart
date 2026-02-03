@@ -22,7 +22,7 @@ class BorrowerView extends GetView<BorrowerController> {
 
             BorrowerAjukanView(),
 
-            BorrowerRiwayatView(), //masih dummy
+            BorrowerRiwayatView(),
 
             BorrowerPengembalianView(),
 
