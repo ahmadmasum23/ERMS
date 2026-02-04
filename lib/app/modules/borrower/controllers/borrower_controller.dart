@@ -346,11 +346,11 @@ class BorrowerController extends GetxController {
           final status = r.status.toLowerCase();
           switch (select) {
             case 9:
-              return status.contains('pending') || status.contains('menunggu');
+              return status.contains('tunggu_pinjam') || status.contains('tunggu_pengembalian');
             case 4:
-              return status.contains('disetujui');
+              return status.contains('setujui_pinjam');
             case 1:
-              return status.contains('ditolak');
+              return status.contains('tolak_pijam');
             case 2:
               return status.contains('selesai') ||
                   status.contains('dikembalikan');
@@ -463,7 +463,7 @@ class BorrowerController extends GetxController {
         peminjamId: user!.id, // This should be the UUID string
         tanggalPinjam: tglPinjam.value!,
         tanggalJatuhTempo: tglKembali.value!,
-        status: 'menunggu',
+        status: 'tunggu_pinjam',
         alasan: ctrlKeperluan.text,
       );
 
@@ -720,7 +720,7 @@ class BorrowerController extends GetxController {
             peminjamId: pengajuan['userId'],
             tanggalPinjam: DateTime.parse(pengajuan['borrowDate']),
             tanggalJatuhTempo: DateTime.parse(pengajuan['returnDate']),
-            status: 'menunggu',
+            status: 'tunggu_pinjam',
             alasan: pengajuan['reason'],
           );
 

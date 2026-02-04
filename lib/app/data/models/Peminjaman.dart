@@ -9,10 +9,13 @@
     final DateTime tanggalPinjam;
     final DateTime tanggalJatuhTempo;
     final DateTime? tanggalKembali;
-    final String status; // 'menunggu', 'disetujui', 'ditolak', 'dikembalikan'
+    final String status; // 'tunggu_pinjam', 'disetujui', 'ditolak', 'dikembalikan'
     final int hariTerlambat;
     final String? alasan;
     final DateTime? dibuatPada;
+    final String status_denda;
+    final int? dendaId;
+
     
     // Relations
     final ProfilPengguna? peminjam;
@@ -27,8 +30,10 @@
       required this.tanggalJatuhTempo,
       this.tanggalKembali,
       required this.status,
+      required this.status_denda,
       this.hariTerlambat = 0,
       this.alasan,
+      this.dendaId,
       this.dibuatPada,
       this.peminjam,
       this.petugas,
@@ -45,7 +50,9 @@
         'status': status,
         'hari_terlambat': hariTerlambat,
         'alasan': alasan,
+        'status_denda':status_denda,
         'dibuat_pada': dibuatPada?.toIso8601String(),
+        'denda_id': dendaId,
       };
     }
 
@@ -59,7 +66,7 @@
         tanggalKembali: json['tanggal_kembali'] != null
             ? DateTime.parse(json['tanggal_kembali'])
             : null,
-        status: json['status'] ?? 'menunggu',
+        status: json['status'] ?? 'tunggu_pinjam',
         hariTerlambat: int.parse(json['hari_terlambat'].toString()),
         alasan: json['alasan'],
         dibuatPada: json['dibuat_pada'] != null
@@ -71,6 +78,7 @@
         petugas: json['petugas'] != null
             ? ProfilPengguna.fromJson(json['petugas'])
             : null,
+        status_denda:json['status_denda'],
       );
     }
 

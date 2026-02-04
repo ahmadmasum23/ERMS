@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:inven/app/data/models/AturanDenda.dart';
 import 'package:inven/app/global/widgets/CustomAppBar.dart';
+import 'package:intl/intl.dart'; // <<=== IMPORT intl
 import '../../controllers/aturan_denda_controller.dart';
 
 class AturanDendaViews extends StatelessWidget {
@@ -12,6 +13,9 @@ class AturanDendaViews extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Buat formatter rupiah
+    final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
     return Column(
       children: [
         CustomAppbar(
@@ -63,7 +67,7 @@ class AturanDendaViews extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
 
-                _buildList(context),
+                _buildList(context, formatter),
               ],
             ),
           ),
@@ -73,7 +77,7 @@ class AturanDendaViews extends StatelessWidget {
   }
 
   /// ================= LIST =================
-  Widget _buildList(BuildContext context) {
+  Widget _buildList(BuildContext context, NumberFormat formatter) {
     return Obx(() {
       if (controller.listAturan.isEmpty) {
         return const Center(
@@ -89,7 +93,7 @@ class AturanDendaViews extends StatelessWidget {
       double itemWidth = (screenWidth - 48 - (columns - 1) * 16) / columns;
 
       List<Widget> cards = controller.listAturan.map((aturan) {
-        return _buildCard(context, aturan);
+        return _buildCard(context, aturan, formatter);
       }).toList();
 
       List<Widget> rows = [];
@@ -110,7 +114,7 @@ class AturanDendaViews extends StatelessWidget {
   }
 
   /// ================= CARD =================
-  Widget _buildCard(BuildContext context, AturanDenda aturan) {
+  Widget _buildCard(BuildContext context, AturanDenda aturan, NumberFormat formatter) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -154,14 +158,13 @@ class AturanDendaViews extends StatelessWidget {
               children: [
                 Expanded(
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Rp ${aturan.jumlah}',
+                      formatter.format(aturan.jumlah), // <<< format Rp 3.000 / Rp 30.000
                       style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -172,8 +175,7 @@ class AturanDendaViews extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 IconButton(
-                  icon: const Icon(Icons.delete,
-                      size: 18, color: Colors.redAccent),
+                  icon: const Icon(Icons.delete, size: 18, color: Colors.redAccent),
                   onPressed: () => _confirmDelete(context, aturan),
                 ),
               ],
@@ -185,62 +187,100 @@ class AturanDendaViews extends StatelessWidget {
   }
 
   /// ================= DIALOG FORM =================
-  void _showFormDialog(BuildContext context, {AturanDenda? aturan}) {
-    final isEdit = aturan != null;
+ void _showFormDialog(BuildContext context, {AturanDenda? aturan}) {
+  final isEdit = aturan != null;
 
-    if (isEdit) controller.isiFormDariData(aturan);
+  // Buat formatter
+  final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(isEdit ? 'Edit Aturan' : 'Tambah Aturan'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Obx(() => DropdownButtonFormField<String>(
-                  value: controller.jenisController.value.isEmpty
-                      ? null
-                      : controller.jenisController.value,
-                  items: controller.jenisOptions
-                      .map((e) =>
-                          DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => controller.jenisController.value = v ?? '',
-                  decoration: const InputDecoration(labelText: 'Jenis'),
-                )),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller.jumlahController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Jumlah'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller.keteranganController,
-              decoration: const InputDecoration(labelText: 'Keterangan'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (isEdit) {
-                controller.updateAturan(aturan.id);
-              } else {
-                controller.tambahAturan();
-              }
-              Navigator.pop(context);
+  // Jika edit, set value ke controller
+  if (isEdit) {
+    controller.isiFormDariData(aturan);
+    // Set jumlahController dengan format Rp
+    controller.jumlahController.text = formatter.format(aturan.jumlah);
+  }
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text(isEdit ? 'Edit Aturan' : 'Tambah Aturan'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Obx(() => DropdownButtonFormField<String>(
+                value: controller.jenisController.value.isEmpty
+                    ? null
+                    : controller.jenisController.value,
+                items: controller.jenisOptions
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (v) => controller.jenisController.value = v ?? '',
+                decoration: const InputDecoration(labelText: 'Jenis'),
+              )),
+          const SizedBox(height: 12),
+          TextField(
+            controller: controller.jumlahController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Jumlah'),
+            onChanged: (value) {
+              String numeric = value.replaceAll(RegExp(r'[^0-9]'), '');
+              if (numeric.isEmpty) numeric = '0';
+              controller.jumlahController.value = TextEditingValue(
+                text: formatter.format(int.parse(numeric)),
+                selection: TextSelection.fromPosition(
+                  TextPosition(offset: formatter.format(int.parse(numeric)).length),
+                ),
+              );
             },
-            child: const Text('Simpan'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: controller.keteranganController,
+            decoration: const InputDecoration(labelText: 'Keterangan'),
           ),
         ],
       ),
-    );
-  }
+      actions: [
+        // Tombol Batal
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.grey.shade300,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          ),
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'Batal',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+
+        // Tombol Simpan
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          ),
+          onPressed: () {
+            String numeric = controller.jumlahController.text.replaceAll(RegExp(r'[^0-9]'), '');
+            controller.jumlahController.text = numeric;
+
+            if (isEdit) {
+              controller.updateAturan(aturan.id);
+            } else {
+              controller.tambahAturan();
+            }
+            Navigator.pop(context);
+          },
+          child: const Text('Simpan', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   void _confirmDelete(BuildContext context, AturanDenda aturan) {
     showDialog(

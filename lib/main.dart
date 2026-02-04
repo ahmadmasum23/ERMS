@@ -26,7 +26,7 @@ void main() async {
   } catch (e) {
     print('Database initialization failed: $e');
   }
-
+  
   print('DEBUG: Running app');
   runApp(
     GetMaterialApp(

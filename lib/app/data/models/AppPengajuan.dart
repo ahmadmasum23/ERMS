@@ -7,7 +7,7 @@ class AppPengajuan {
   final DateTime tanggalPinjam;
   final DateTime tanggalJatuhTempo;
   final DateTime? tanggalKembali;
-  final String status; // 'menunggu', 'disetujui', 'ditolak', 'dikembalikan'
+  final String status; // 'tunggu_pinjam', 'disetujui', 'ditolak', 'dikembalikan'
   final int hariTerlambat;
   final String? alasan;
   final DateTime? dibuatPada;
@@ -53,7 +53,7 @@ class AppPengajuan {
       tanggalKembali: json['tanggal_kembali'] != null
           ? DateTime.parse(json['tanggal_kembali'])
           : null,
-      status: json['status'] ?? 'menunggu',
+      status: json['status'] ?? 'tunggu_pinjam',
       hariTerlambat: int.parse(json['hari_terlambat'].toString()),
       alasan: json['alasan'],
       dibuatPada: json['dibuat_pada'] != null

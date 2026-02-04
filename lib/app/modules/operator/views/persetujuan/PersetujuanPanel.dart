@@ -40,7 +40,7 @@ class PersetujuanPanel extends GetView<OperatorController> {
 
               // Filter for pending applications (status = 'menunggu')
               final pendingApplications = controller.pengajuan
-                  .where((p) => p.status == 'menunggu')
+                  .where((p) => p.status == 'tunggu_pinjam')
                   .toList();
               
               if (pendingApplications.isEmpty) {
